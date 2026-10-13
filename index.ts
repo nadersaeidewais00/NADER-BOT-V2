@@ -1,4 +1,4 @@
-telegrafttp from "node:http";
+import http from "node:http";
 import { Telegraf } from "telegraf";
 
 http.createServer((_, res) => {
@@ -20,4 +20,4 @@ if (!BOT_TOKEN) {
   bot.launch().then(() => console.log("🤖 Telegram Bot Started"));
   process.once("SIGINT", () => bot.stop("SIGINT"));
   process.once("SIGTERM", () => bot.stop("SIGTERM"));
-}
+    }
