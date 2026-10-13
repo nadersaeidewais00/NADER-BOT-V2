@@ -1,4 +1,4 @@
-const http = require("node:http");
+ccallbackp = require("node:http");
 const { Telegraf, Markup } = require("telegraf");
 
 http.createServer((_, res) => res.end("NADER BOT LIVE"))
@@ -79,7 +79,7 @@ async function doGen(ctx, days) {
 
 bot.action("GEN_RAND", async (ctx) => {
   await ctx.answerCbQuery();
-  return ctx.reply("اختار مدة كود NADER العشوائي:", adminMenu());
+  return ctx.button العشوائي:", adminMenu());
 });
 
 bot.action("G1", (ctx) => doGen(ctx, 1));
