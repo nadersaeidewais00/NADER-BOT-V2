@@ -1,89 +1,83 @@
-import http from "node:http";
-import { Telegraf, Markup } from "telegraf";
-
-http.createServer((_, res) => {
-  res.writeHead(200, { "Content-Type": "text/plain" });
-  res.end("NADER BOT - Conquerors Golden Age Official");
-}).listen(process.env.PORT || 10000, "0.0.0.0", () => console.log("✅ NADER BOT ONLINE"));
-
-const BOT_TOKEN = process.env.BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
-const ADMIN_ID = parseInt(process.env.ADMIN_ID || "0"); // حط ايدي بتاعك من @userinfobot
-
-if (!BOT_TOKEN) console.log("❌ BOT_TOKEN Missing");
-else {
-  const bot = new Telegraf(BOT_TOKEN);
-
-  type Account = { email: string; password: string; castleId: string; active: boolean; lastRun?: string };
-  type License = { code: string; days: number; used: boolean; usedBy?: number; usedAt?: number; createdAt: number };
-  type Sub = { expiresAt: number };
-
-  const db = new Map<number, Account[]>();
-  const timers = new Map<number, NodeJS.Timeout[]>();
-  const licenses = new Map<string, License>();
-  const subs = new Map<number, Sub>();
-
-  // حماية ضد الاوتو كليكر والنصب
-  const clicks = new Map<number, number[]>();
-  const captcha = new Map<number, { q: string; a: number }>();
-
-  const isClicker = (id: number) => {
-    const now = Date.now();
-    const arr = clicks.get(id) || [];
-    arr.push(now);
-    if (arr.length > 8) arr.shift();
-    clicks.set(id, arr);
-    if (arr.length >= 5 && arr[4] - arr[0] < 2500) return true;
-    return false;
-  };
-
-  const genCode = () => {
-    const c = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    let s = "NADER-";
-    for (let i = 0; i < 8; i++) s += c[Math.floor(Math.random() * c.length)];
-    return s;
-  };
-  const hasSub = (id: number) => id === ADMIN_ID  (subs.get(id)?.expiresAt  0) > Date.now();
-  const daysLeft = (id: number) => {
-    const s = subs.get(id);
-    if (!s) return 0;
-    return Math.max(0, Math.ceil((s.expiresAt - Date.now()) / 86400000));
-  };
-
-  const mainKeyboard = (uid: number) => {
-    const active = hasSub(uid);
-    return Markup.inlineKeyboard([
-      [Markup.button.callback("👤 حساباتي", "MY_ACCOUNTS"), Markup.button.callback("➕ اضافة حساب", "ADD_ACCOUNT")],
-      [Markup.button.callback("🎮 حدث النداء", "NIDAA_EVENT"), Markup.button.callback("⚙️ اعدادات", "SETTINGS")],
-      [Markup.button.callback("💎 اشتراكي", "MY_SUB"), Markup.button.callback("🎟️ تفعيل كود", "REDEEM_CODE")],
-     ...(uid === ADMIN_ID? [[Markup.button.callback("👑 NADER ADMIN PANEL", "ADMIN_PANEL")]] : []),
-      [Markup.button.callback("📞 الدعم", "SUPPORT")]
-    ]);
-  };
-
-  const adminKeyboard = () => Markup.inlineKeyboard([
-    [Markup.button.callback("🎲 توليد كود NADER عشوائي", "ADMIN_GEN")],
-    [Markup.button.callback("1 يوم", "GEN_1"), Markup.button.callback("3 ايام", "GEN_3"), Markup.button.callback("7 ايام", "GEN_7")],
-    [Markup.button.callback("15 يوم", "GEN_15"), Markup.button.callback("30 يوم", "GEN_30"), Markup.button.callback("90 يوم", "GEN_90")],
-    [Markup.button.callback("📋 كل اكواد NADER", "LIST_CODES"), Markup.button.callback("👥 كل العملاء", "LIST_CLIENTS")],
-    [Markup.button.callback("🔙 رجوع", "BACK_HOME")]
-  ]);
-
-  // حماية عامة من الاوتو كليكر
-  bot.use(async (ctx, next) => {
-    const uid = ctx.from?.id;
-    if (!uid) return next();
-    if (captcha.has(uid)) return next();
-    if (ctx.callbackQuery && isClicker(uid)) {
-      const a = Math.floor(Math.random() * 9) + 1;
-      const b = Math.floor(Math.random() * 9) + 1;
-      captcha.set(uid, { q: ${a}+${b}, a: a + b });
-      await ctx.answerCbQuery("🚨 كشف اوتو كليكر", true);
-      return ctx.reply(🛡️ *نظام NADER BOT لمكافحة النصب*\n\nتم كشف ضغط تلقائي\nحل: *${a} + ${b} = ؟*\n\nاكتب الناتج, { parse_mode: "Markdown" });
-    }
-    return next();
+*🏰 مرحبا بك في NADER BOT*\n +
+      *النسخة الرسمية - Conquerors Golden Age*\n +
+      *الفاتحون العصر الذهبي*\n\n +
+      *مثل SONA BOT بالظبط ولكن باسمك*\n\n +
+      (isAdm? 👑 *انت المالك - NADER*\n\n : "") +
+      (hasSub(uid)? ✅ اشتراكك فعال في *NADER BOT*\n⏰ باقي: *${daysLeft(uid)} يوم*\n\n : ❌ غير مفعل في *NADER BOT*\n🎟️ فعل كود من الادمن NADER\n\n) +
+      *NADER BOT يقدر:*\n +
+      🏰 يلعب حدث النداء تلقائي\n +
+      ⚔️ يجمع جوائز النداء\n +
+      🤖 يشتغل 24 ساعة\n +
+      🛡️ محمي من الحظر\n\n +
+      *اختر من القائمة:*,
+      mainKeyboard(uid)
+    );
   });
 
-  bot.start((ctx) => {
-    const uid = ctx.from.id;
-    const isAdm = uid === ADMIN_ID;
-    return ctx.replyWithMarkdown(
+  bot.action("ADMIN_PANEL", async (ctx) => {
+    if (ctx.from!.id!== ADMIN_ID) return ctx.answerCbQuery("❌ انت مش NADER");
+    await ctx.answerCbQuery();
+    ctx.replyWithMarkdown(
+      *👑 NADER ADMIN PANEL*\n\n +
+      *مرحبا NADER - لوحة تحكم بوتك الخاص*\n\n +
+      🎲 توليد كود - يولد كود عشوائي باسم NADER BOT\n +
+      ⏰ تختار المدة\n +
+      🎟️ الكود لمرة واحدة بس,
+      adminKeyboard()
+    );
+  });
+
+  const doGen = async (ctx: any, days: number) => {
+    if (ctx.from!.id!== ADMIN_ID) return;
+    const code = genCode();
+    licenses.set(code, { code, days, used: false, createdAt: Date.now() });
+    await ctx.answerCbQuery(تم توليد ${code});
+    ctx.replyWithMarkdown(
+      *✅ NADER BOT - تم توليد كود جديد*\n\n +
+      🎟️ الكود: \${code}\\n +
+      ⏰ المدة: *${days} يوم*\n +
+      👑 البوت: *NADER BOT*\n +
+      🔒 الاستخدام: *مرة واحدة فقط*\n\n +
+      *ابعته للعميل كده:*\n +
+      \مرحبا، كود تفعيل NADER BOT الخاص بك:\n${code}\nالمدة ${days} يوم\\n\n +
+      العميل هيدخل يفعله في البوت,
+      adminKeyboard()
+    );
+  };
+
+  bot.action("ADMIN_GEN", async (ctx) => { if (ctx.from!.id!== ADMIN_ID) return; await ctx.answerCbQuery(); ctx.reply("اختار مدة كود NADER BOT:", adminKeyboard()); });
+  bot.action("GEN_1", (ctx) => doGen(ctx, 1));
+  bot.action("GEN_3", (ctx) => doGen(ctx, 3));
+  bot.action("GEN_7", (ctx) => doGen(ctx, 7));
+  bot.action("GEN_15", (ctx) => doGen(ctx, 15));
+  bot.action("GEN_30", (ctx) => doGen(ctx, 30));
+  bot.action("GEN_90", (ctx) => doGen(ctx, 90));
+
+  bot.action("LIST_CODES", async (ctx) => {
+    if (ctx.from!.id!== ADMIN_ID) return;
+    await ctx.answerCbQuery();
+    if (!licenses.size) return ctx.reply("مفيش اكواد NADER", adminKeyboard());
+    let msg = *📋 اكواد NADER BOT (${licenses.size}):*\n\n;
+    licenses.forEach(l => { msg += ${l.used? "✅" : "⏳"} \${l.code}\ - ${l.days} يوم ${l.used? استخدم بواسطة ${l.usedBy} : ""}\n; });
+    ctx.replyWithMarkdown(msg, adminKeyboard());
+  });
+
+  bot.action("LIST_CLIENTS", async (ctx) => {
+    if (ctx.from!.id!== ADMIN_ID) return;
+    await ctx.answerCbQuery();
+    if (!subs.size) return ctx.reply("مفيش عملاء NADER BOT", adminKeyboard());
+    let msg = *👥 عملاء NADER BOT (${subs.size}):*\n\n;
+    subs.forEach((s, id) => { msg += 👤 ${id} - باقي ${daysLeft(id)} يوم\n; });
+    ctx.replyWithMarkdown(msg, adminKeyboard());
+  });
+
+  bot.action("BACK_HOME", async (ctx) => { await ctx.answerCbQuery(); ctx.reply("🏠 الرئيسية - NADER BOT", mainKeyboard(ctx.from!.id)); });
+  bot.action("MY_ACCOUNTS", async (ctx) => {
+    await ctx.answerCbQuery();
+    const accs = db.get(ctx.from!.id) || [];
+    if (!accs.length) return ctx.reply("📭 مفيش حسابات في NADER BOT", mainKeyboard(ctx.from!.id));
+    let m = *👤 حساباتك في NADER BOT (${accs.length}):*\n\n;
+    accs.forEach((a, i) => m += ${i + 1}. 🏰 قلعة \${a.castleId}\ - ${a.active? "🟢 شغال" : "🔴 واقف"}\n);
+    ctx.replyWithMarkdown(m, mainKeyboard(ctx.from!.id));
+  });
+  bot.action("ADD_ACCOUNT", async (ctx) => { if (!hasSub(ctx.from!.id)) return ctx.reply("🔒 فعل كود NADER BOT الاول", mainKeyboard(ctx.from!.id)); await ctx.answerCbQuery(); ctx.replyWithMarkdown("✍️ ابعت حسابك في *NADER BOT* كده:\n\nemail password castleID\nمثال:\nnader@gmail.com pass123 1234567"); });
