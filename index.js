@@ -1,55 +1,84 @@
-bot.on("text", (ctx)=>{
-  const id = ctx.from.id;
-  const t = ctx.message.text;
+const http = require("http");
+const { Telegraf, Markup } = require("telegraf");
+
+// سيرفر Render
+http.createServer((_,res)=>{
+  res.writeHead(200,{"Content-Type":"text/plain; charset=utf-8"});
+  res.end("NADER STORE SECURE LIVE ✅");
+}).listen(process.env.PORT||10000,"0.0.0.0");
+console.log("HTTP LIVE");
+
+if(!process.env.BOT_TOKEN){
+  console.log("BOT_TOKEN ناقص");
+} else {
+const ADMIN_ID = parseInt(process.env.ADMIN_ID||"0");
+let DB = {castles:[], users:{}, bans:[], payments:[], vodafone:"01000000000"};
+let warns = {};
+let lastAct = {};
+let payLock = new Set();
+const BAD = ["كس","عرص","متناك","شرموطة","خول","قحبة","يلعن"];
+
+const mainKB = Markup.keyboard([["الـمـتـجـر 🏰"],["حـسـابـي 👤","الـمـحـفـظـة 💰"],["الـدعـم 🛎"]]).resize();
+const storeKB = Markup.keyboard([["إضــافــة إعــلان قــلــعــه"],["مــشــاهــدة قــلــعــه"],["🔙 رجوع"]]).resize();
+
+const bot = new Telegraf(process.env.BOT_TOKEN);
+
+bot.start((ctx)=>{
+  if(!DB.users[ctx.from.id]) DB.users[ctx.from.id]={balance:0,warns:0};
+  ctx.reply("مـرحـبـٱ بـك فـي مـتـجـر NADER STORE إختر الخدمه التي تريدها من الأزرار", mainKB);
+});
+
+bot.hears("الـمـتـجـر 🏰",(ctx)=>ctx.reply("🏰 قسم القلاع:",storeKB));
+bot.hears("🔙 رجوع",(ctx)=>ctx.reply("الرئيسية",mainKB));
+
+let addMode = new Set();
+bot.hears("إضــافــة إعــلان قــلــعــه",(ctx)=>{addMode.add(ctx.from.id); ctx.reply("ابعت وصف القلعة:");});
+bot.hears("مــشــاهــدة قــلــعــه",(ctx)=>{
+  if(DB.castles.length==0) return ctx.reply("لا يوجد قلاع حاليا 🏜️",mainKB);
+  DB.castles.forEach((c,i)=>ctx.reply(🏰 #${i+1}\n${c.text}\n💰 ${c.price},Markup.inlineKeyboard([[Markup.button.callback("🛒 شراء","buy_"+i)]])));
+});
+
+bot.hears("حـسـابـي 👤",(ctx)=>{
+  const u=DB.users[ctx.from.id]||{balance:0,warns:0};
+  ctx.reply(👤 حسابك\nID:${ctx.from.id}\n💰 رصيد:${u.balance}ج\n⚠️ تحذيرات:${u.warns}/3);
+});
+
+bot.hears("الـمـحـفـظـة 💰",(ctx)=>{
+  ctx.reply(💰 المحفظة\nرصيدك:${DB.users[ctx.from.id]?.balance||0}ج\nرقم فودافون كاش:\n${DB.vodafone}\nابعت سكرين ثم تأكيد مرة واحدة فقط,Markup.inlineKeyboard([[Markup.button.callback("✅ تأكيد الدفع","confirm_pay")]]));
+});
+
+bot.action("confirm_pay",(ctx)=>{
+  if(payLock.has(ctx.from.id)) return ctx.reply("❌ لا يمكنك ارسال طلب تأكيد الا مره واحده فقط");
+  payLock.add(ctx.from.id); ctx.reply("📸 ابعت سكرين التحويل");
+});
+
+bot.on("photo",(ctx)=>{
+  if(!payLock.has(ctx.from.id)) return;
+  const fid=ctx.message.photo.pop().file_id;
+  DB.payments.push({userId:ctx.from.id,fileId:fid,status:"pending"});
+  ctx.reply("✅ تم استلام السكرين - سيتم فحصه ضد التزوير");
+  if(ADMIN_ID){
+    bot.telegram.sendPhoto(ADMIN_ID,fid,{caption:💰 طلب دفع من ${ctx.from.id} @${ctx.from.username||""},reply_markup:{inline_keyboard:[[{text:"✅ تأكيد",callback_data:"ok_"+ctx.from.id},{text:"❌ الغاء",callback_data:"no_"+ctx.from.id}],[{text:"🚫 حظر تزوير",callback_data:"ban_"+ctx.from.id}]]}}).catch(()=>{});
+  }
+});
+
+bot.action(/ok_(.+)/,(ctx)=>{
+  if(ctx.from.id!=ADMIN_ID) return;
+  const uid=ctx.match[1];
+  if(DB.users[uid]) DB.users[uid].balance+=100;
+  payLock.delete(parseInt(uid)); ctx.reply("تم التأكيد ✅");
+  bot.telegram.sendMessage(uid,"✅ تم تأكيد دفعك 💰").catch(()=>{});
+});
+bot.action(/no_(.+)/,(ctx)=>{
+  if(ctx.from.id!=ADMIN_ID) return;
+  payLock.delete(parseInt(ctx.match[1])); ctx.reply("تم الالغاء ❌");
+});
+bot.action(/ban_(.+)/,(ctx)=>{
+  if(ctx.from.id!=ADMIN_ID) return;
+  DB.bans.push(parseInt(ctx.match[1])); payLock.delete(parseInt(ctx.match[1])); ctx.reply("تم الحظر 🚫");
+});
+
+bot.on("text",(ctx)=>{
+  const id=ctx.from.id; const t=ctx.message.text;
   if(["الـمـتـجـر 🏰","حـسـابـي 👤","الـمـحـفـظـة 💰","الـدعـم 🛎","إضــافــة إعــلان قــلــعــه","مــشــاهــدة قــلــعــه","🔙 رجوع"].includes(t)) return;
-
-  if(addMode.has(id)){
-    addMode.delete(id);
-    DB.castles.push({text:t.slice(0,300), price:"اسأل البائع", seller:id});
-    return ctx.reply("✅ تم اضافة اعلان قلعتك 🏰", mainKB);
-  }
-
-  // حماية اوتو كليكر - 10 ثواني
-  if(t.includes("شراء")){
-    const last = lastAction.get(id)||0;
-    if(Date.now()-last < 10000) return ctx.reply("⏳ انتظر 10 ثواني بين كل شراء - حماية من الأوتو كليكر");
-    lastAction.set(id, Date.now());
-  }
-
-  // فلتر شتيمة قبل الدعم
-  if(BAD.some(w=>t.includes(w))){
-    const u = DB.users[id];
-    u.warns = (u.warns||0)+1;
-    if(u.warns>=3){ DB.bans.push(id); return ctx.reply("🚫 حظر بعد 3 تحذيرات"); }
-    return ctx.reply(⚠️ تحذير ${u.warns}/3 - ممنوع الشتيمة - رسالتك لم تصل للدعم);
-  }
-
-  if(DB.bans.includes(id)) return ctx.reply("🚫 انت محظور");
-
-  if(ADMIN_ID && t.length>2) {
-    bot.telegram.sendMessage(ADMIN_ID, 📩 دعم من ${id} @${ctx.from.username||""}:\n${t.slice(0,500)}).catch(()=>{});
-    ctx.reply("✅ تم ارسال رسالتك للدعم");
-  }
-});
-
-bot.command("setvodafone", (ctx)=>{
-  if(ctx.from.id!=ADMIN_ID) return;
-  const n = ctx.message.text.split(" ")[1];
-  if(!n) return ctx.reply("اكتب: /setvodafone 010xxxxxxxx");
-  DB.vodafone=n;
-  ctx.reply("تم تحديث رقم فودافون ✅ "+n);
-});
-bot.command("bans", (ctx)=>{
-  if(ctx.from.id!=ADMIN_ID) return;
-  ctx.reply(DB.bans.length? "🚫 المحظورين:\n"+DB.bans.join("\n"):"لا يوجد محظورين");
-});
-bot.command("unban", (ctx)=>{
-  if(ctx.from.id!=ADMIN_ID) return;
-  const uid = parseInt(ctx.message.text.split(" ")[1]);
-  DB.bans = DB.bans.filter(x=>x!=uid);
-  if(DB.users[uid]) DB.users[uid].warns=0;
-  ctx.reply("تم فك الحظر ✅");
-});
-
-bot.launch().then(()=> console.log("BOT LAUNCHED SECURE")).catch(e=> console.log("BOT ERROR", e.message));
-      }
+  if(addMode.has(id)){addMode.delete(id); DB.castles.push({text:t.slice(0,300),price:"اسأل البائع",seller:id}); return ctx.reply("✅ تم اضافة قلعتك 🏰",mainKB);}
