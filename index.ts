@@ -5,6 +5,3 @@ http.createServer((_, res) => {
 }).listen(process.env.PORT || 10000, "0.0.0.0", () => {
   console.log("Server listening");
 });
-
-export * from "./schema";
-export * from "./telegram-store";
