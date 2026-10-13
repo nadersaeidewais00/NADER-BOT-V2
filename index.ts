@@ -1,3 +1,5 @@
+import http from "node:http";
+http.createServer((_, res) => res.end("Bot is alive")).listen(process.env.PORT || 10000);
 // Export your models here. Add one export per file
 // export * from "./posts";
 //
