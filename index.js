@@ -1,23 +1,27 @@
-bot.on("text", async (ctx) => {
-  const uid = ctx.from.id;
-  const txt = ctx.message.text;
-  if(["الـمـتـجـر","حـسـابـي","الـمـحـفـظـة","الـدعـم"].includes(txt)) return;
-  if(txt.startsWith("/")) return;
-  const state = userState.get(uid);
-  if(state==="add_castle"){
-    getUser(uid).ads.push(txt);
-    userState.delete(uid);
-    await ctx.reply("تم اضافة اعلانك");
-    return;
-  }
-  if(state==="support"){
-    userState.delete(uid);
-    await ctx.reply("تم ارسال رسالتك");
-    await bot.telegram.sendMessage(ADMIN_ID, "دعم ID:" + uid + " " + txt);
-    return;
-  }
+// اوامر ادمن
+bot.command("setvodafone",(ctx)=>{
+  if(ctx.from.id !== ADMIN_ID) return;
+  const num = ctx.message.text.split(" ")[1];
+  if(!num) return ctx.reply("استخدم: /setvodafone 010xxxxxxxx");
+  DB.vodafoneNumber = num;
+  saveDB();
+  ctx.reply(تم تحديث رقم فودافون كاش الى ${num} ✅);
 });
 
-bot.launch().then(()=> console.log("NADER STORE LIVE"));
-process.once("SIGINT", ()=> bot.stop("SIGINT"));
-process.once("SIGTERM", ()=> bot.stop("SIGTERM"));
+bot.command("bans",(ctx)=>{
+  if(ctx.from.id !== ADMIN_ID) return;
+  if(DB.bans.length===0) return ctx.reply("لا يوجد محظورين");
+  ctx.reply("🚫 قائمة الحظر:\n"+DB.bans.map(b=>ID:${b.id} - ${b.reason}).join("\n"));
+});
+
+bot.command("unban",(ctx)=>{
+  if(ctx.from.id !== ADMIN_ID) return;
+  const id = parseInt(ctx.message.text.split(" ")[1]);
+  DB.bans = DB.bans.filter(b=>b.id!==id);
+  if(DB.users[id]) DB.users[id].warnings=0;
+  saveDB();
+  ctx.reply(تم فك حظر ${id} ✅);
+});
+
+bot.launch();
+console.log("NADER STORE SECURE LIVE - مع كل انظمة الحماية");
