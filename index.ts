@@ -1,5 +1,16 @@
 import http from "node:http";
-http.createServer((_, res) => res.end("Bot is alive")).listen(process.env.PORT || 10000);
+http.createServer((_, res) => {
+  res.writeHead(200, { "Content-Type": "text/plain" });
+  res.end("Bot is alive");
+}).listen(process.env.PORT || 10000, "0.0.0.0", () => {
+  console.log("Server listening");
+});
+
+// Export all tables and relations from the schema
+export * from "./schema";
+
+// Re-export the typed store
+export * from "./telegram-store";
 // Export your models here. Add one export per file
 // export * from "./posts";
 //
