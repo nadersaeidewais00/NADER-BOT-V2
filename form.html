@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NADER STORE BLACK GOLD</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070a0a;--card:#101515;--card2:#161c1c;--line:#1f2a2a;--gold:#f5c542;--gold2:#ffe27a;--muted:#7a8a8a}
+*{box-sizing:border-box;font-family:'Cairo',Arial}
+body{margin:0;background:radial-gradient(120% 80% at 50% 0%, #152020 0%, var(--bg) 55%);color:#e8ecec;padding:0 0 90px}
+.top{position:sticky;top:0;z-index:10;background:rgba(7,10,10,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:14px 16px;display:flex;justify-content:space-between}
+.mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;color:#000;font-weight:900}
+.card{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:20px;padding:14px;margin-bottom:14px}
+.chip{border:1px solid var(--line);background:#0e1515;color:#cbd5d5;padding:8px 12px;border-radius:999px;font-size:13px;cursor:pointer;display:inline-block;margin:4px}
+.chip.sel{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-weight:800}
+label{font-size:12px;color:var(--muted);display:block;margin:8px 0 6px}
+input,select,textarea{width:100%;background:#0c1212;border:1px solid var(--line);border-radius:14px;color:#fff;padding:13px 12px}
+.btn{width:100%;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border:none;border-radius:16px;padding:16px;font-weight:900;font-size:16px}
+.wrap{padding:16px;max-width:520px;margin:0 auto}
+.bottom{position:fixed;bottom:0;left:0;right:0;padding:12px 16px;background:linear-gradient(180deg,rgba(7,10,10,0),rgba(7,10,10,.9) 20%)}
+</style>
+</head>
+<body>
+<div class="top"><div style="display:flex;gap:10px;align-items:center"><div class="mark">N</div><div><b>NADER STORE</b><div style="font-size:11px;color:#7a8a8a">PREMIUM CASTLES</div></div></div><div style="border:1px solid #1f2a2a;padding:6px 10px;border-radius:999px;font-size:11px;color:#f5c542">BLACK GOLD</div></div>
+
+<div class="wrap">
+<h1 style="font-size:26px;font-weight:900;margin:18px 0 4px">اعرض قلعتك <span style="color:#f5c542">بشكل فخم</span></h1>
+<p style="color:#7a8a8a;font-size:13px;margin:0 0 14px">تصميم مختلف تماما عن بلقيس - تناسق احترافي</p>
+
+<div class="card"><b>01 بيانات البائع</b><label>الاسم *</label><input id="name" placeholder="نادر"><label>الهاتف *</label><input id="phone"><label>المستوى *</label><select id="level"><option value="">اختر</option><option>30</option><option>31</option><option>32</option><option>33</option><option>35</option></select></div>
+
+<div class="card"><b>02 قوة القلعة</b><label>القوة الاجمالية</label><input id="power" placeholder="120,000,000"><label>قوة العلم</label><input id="science" placeholder="225"><label>الوصف</label><textarea id="desc" rows="3"></textarea></div>
+
+<div class="card"><b>03 الابطال</b> <span id="countSel" style="font-size:11px;color:#7a8a8a;border:1px dashed #1f2a2a;padding:4px 8px;border-radius:999px">0 مختار</span>
+<div style="margin-top:10px;font-size:13px">⚔️ الفرسان - 6 فقط</div><div id="horses"></div>
+<div style="margin-top:10px;font-size:13px">🏹 الرماة</div><div id="archers"></div>
+<div style="margin-top:10px;font-size:13px">🛞 العجلات - بدون زنوبيا</div><div id="wheels"></div>
+<div style="margin-top:10px;font-size:13px">🛡️ المشاة - المختار ومحمد الفاتح فقط</div><div id="inf"></div>
+</div>
+
+<div class="card"><b>04 السعر</b><label>السعر المطلوب</label><input id="price" placeholder="350,000"></div>
+</div>
+
+<div class="bottom"><button class="btn" onclick="sendData()">نشر العرض الآن ✨</button></div>
+<script>
+const tg=Telegram.WebApp;tg.expand();let selected=new Set();
+function updateCount(){document.getElementById('countSel').textContent=selected.size+' مختار'}
+async function loadHeroes(){const r=await fetch('/api/heroes');const h=await r.json();render('horses',h.horses[]);render('archers',h.archers[]);render('wheels',h.wheels[]);render('inf',h.inf[]);}
+function render(id,list){const el=document.getElementById(id);el.innerHTML='';if(!list.length){el.innerHTML='<div style="font-size:12px;color:#5a8a8a;border:1px dashed #1f2a2a;padding:8px;border-radius:12px;margin-top:6px">فاضي - ضيف من لوحة الادمن</div>';return;}list.forEach(name=>{const d=document.createElement('div');d.className='chip';d.textContent=name;d.onclick=()=>{d.classList.toggle('sel');if(selected.has(name))selected.delete(name);else selected.add(name);updateCount();};el.appendChild(d);});}
+function sendData(){const data={sellerName:document.getElementById('name').value.trim(),phone:document.getElementById('phone').value.trim(),level:document.getElementById('level').value,power:document.getElementById('power').value.trim(),science:document.getElementById('science').value.trim(),desc:document.getElementById('desc').value.trim(),price:document.getElementById('price').value.trim(),heroes:Array.from(selected)};if(!data.sellerName!data.phone!data.level){tg.showAlert('اكمل الاسم والهاتف والمستوى');return;}tg.sendData(JSON.stringify(data));}
+loadHeroes();
+</script>
+</body>
+</html>
