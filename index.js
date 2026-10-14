@@ -9,20 +9,19 @@ const PORT = process.env.PORT || 10000;
 
 const bot = new Telegraf(BOT_TOKEN);
 let castles = [];
-let waitingSupport = new Set();
 
 const server = http.createServer((req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  try {
-    const html = fs.readFileSync(path.join(__dirname, "form.html"), "utf8");
+  const fp = path.join(__dirname, "form.html");
+  if (fs.existsSync(fp)) {
+    const html = fs.readFileSync(fp, "utf8");
     res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
     return res.end(html);
-  } catch (e) {
-    res.writeHead(200, { "Content-Type": "text/plain" });
-    return res.end("NADER STORE LIVE");
   }
+  res.writeHead(200, { "Content-Type": "text/plain" });
+  return res.end("NADER STORE LIVE");
 });
-server.listen(PORT, "0.0.0.0");
+server.listen(PORT, "0.0.0.0", () => console.log("Live "+PORT));
 
 function mainMenu(isAdmin) {
   const kb = [
@@ -48,24 +47,22 @@ bot.action("STORE", (ctx) => {
 
 bot.action("VIEW", (ctx) => {
   ctx.answerCbQuery();
-  if (castles.length === 0) return ctx.reply("لا يوجد قلاع حاليا");
-  let t = "🏰 القلاع:\n\n";
-  castles.slice(-10).reverse().forEach((c,i)=>{ t+=${i+1}. ${c.sellerName} | لفل ${c.level} | ${c.price}\n; });
+  if (castles.length === 0) return ctx.reply("لا يوجد قلاع");
+  let t = ""; castles.slice(-10).forEach((c,i)=>{ t+=${i+1}. ${c.sellerName} - لفل ${c.level}\n; });
   return ctx.reply(t);
 });
-bot.action("ACCOUNT", (ctx) => { ctx.answerCbQuery(); return ctx.reply("👤 حسابك\nID: " + ctx.from.id); });
-bot.action("WALLET", (ctx) => { ctx.answerCbQuery(); return ctx.reply("💳 المحفظة"); });
-bot.action("SUPPORT", (ctx) => { ctx.answerCbQuery(); waitingSupport.add(ctx.from.id); return ctx.reply("📩 ارسل رسالتك:"); });
 bot.action("MAIN", (ctx) => { ctx.answerCbQuery(); return ctx.reply("مـرحـبـٱ بـك فـي مـتـجـر NADER STORE إخـتـر الـخـدمـه مـن الأزرار :", mainMenu(ctx.from.id === ADMIN_ID)); });
-bot.action("ADMIN", (ctx) => { if(ctx.from.id!==ADMIN_ID) return; ctx.answerCbQuery(); return ctx.reply("ادمن"); });
+bot.action("ACCOUNT", (ctx) => { ctx.answerCbQuery(); return ctx.reply("حسابك: "+ctx.from.id); });
+bot.action("WALLET", (ctx) => { ctx.answerCbQuery(); return ctx.reply("المحفظة"); });
+bot.action("SUPPORT", (ctx) => { ctx.answerCbQuery(); return ctx.reply("ابعت رسالتك"); });
 
-bot.on("message", (ctx,next)=>{
-  if(ctx.message?.web_app_data){
-    try{ const d=JSON.parse(ctx.message.web_app_data.data); castles.push(d); return ctx.reply("✅ تم النشر بنجاح!"); } catch(e){ return ctx.reply("❌ خطأ"); }
+bot.on("message", (ctx, next) => {
+  if (ctx.message?.web_app_data) {
+    try { castles.push(JSON.parse(ctx.message.web_app_data.data)); return ctx.reply("✅ تم النشر!"); } catch(e){ return ctx.reply("❌ خطأ"); }
   }
-  if(waitingSupport.has(ctx.from.id) && ctx.message?.text){ waitingSupport.delete(ctx.from.id); return ctx.reply("✅ تم الارسال"); }
   return next();
 });
+
 bot.launch();
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
