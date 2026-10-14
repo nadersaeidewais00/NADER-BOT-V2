@@ -1,83 +1,175 @@
 const http = require("http");
-http.createServer((req,res)=>{res.writeHead(200);res.end("OK");}).listen(process.env.PORT||10000,"0.0.0.0");
-
+const fs = require("fs");
+const path = require("path");
 const { Telegraf, Markup } = require("telegraf");
-const bot = new Telegraf(process.env.BOT_TOKEN);
+
+const BOT_TOKEN = process.env.BOT_TOKEN;
 const ADMIN_ID = Number(process.env.ADMIN_ID);
+const PORT = process.env.PORT || 10000;
 
-let castles = [];
-let users = {};
-let bans = [];
-let vodafone = "01000000000";
-let addMode = new Set();
-let payLock = new Set();
-
-function isBad(t){
-  if(!t) return false;
-  let s = t.toLowerCase();
-  s = s.replace(/[أإآ]/g,"ا");
-  const bad = ["كس","شرموط","خول","قحب","عرص","متناك","زبي","نيك","fuck","shit","bitch","asshole","dick","pussy","كسمك","احا"];
-  for(let w of bad){ if(s.includes(w)) return true; }
-  return false;
+if (!BOT_TOKEN) {
+  console.log("ERROR: BOT_TOKEN ناقص");
 }
 
-bot.start((ctx)=>{
-  if(!users[ctx.from.id]) users[ctx.from.id]={balance:0,warns:0};
-  ctx.reply("مرحبا في NADER STORE", Markup.keyboard([["المتجر"],["حسابي","المحفظة"],["الدعم"]]).resize());
-});
+const bot = new Telegraf(BOT_TOKEN);
 
-bot.hears("المتجر",(ctx)=>ctx.reply("اختر", Markup.keyboard([["اضافة قلعة"],["مشاهدة قلعة"],["رجوع"]]).resize()));
-bot.hears("رجوع",(ctx)=>ctx.reply("الرئيسية", Markup.keyboard([["المتجر"],["حسابي","المحفظة"],["الدعم"]]).resize()));
-bot.hears("اضافة قلعة",(ctx)=>{addMode.add(ctx.from.id);ctx.reply("ابعت وصف القلعة");});
-bot.hears("مشاهدة قلعة",(ctx)=>{
-  if(!castles.length) return ctx.reply("لا يوجد قلاع");
-  castles.forEach((c,i)=>ctx.reply("قلعة #"+(i+1)+"\n"+c.text, Markup.inlineKeyboard([[Markup.button.callback("شراء","buy_"+i)]])));
-});
-bot.hears("حسابي",(ctx)=>{
-  let u=users[ctx.from.id]||{balance:0,warns:0};
-  ctx.reply("ID: "+ctx.from.id+"\nرصيد: "+u.balance+"\nتحذيرات: "+u.warns+"/3");
-});
-bot.hears("المحفظة",(ctx)=>ctx.reply("رصيد: "+(users[ctx.from.id]?.balance||0)+"\nVodafone: "+vodafone, Markup.inlineKeyboard([[Markup.button.callback("تاكيد الدفع","pay")]])));
-bot.hears("الدعم",(ctx)=>ctx.reply("ابعت رسالتك"));
+// الابطال - انت بتتحكم بيهم من التليجرام
+let heroes = {
+  horses: ["اسكندر","بارون","جوهر","براك","هارون","عبدالرحمن"],
+  archers: [],
+  wheels: [],
+  inf: ["المختار","محمد الفاتح"]
+};
 
-bot.action("pay",(ctx)=>{
-  if(payLock.has(ctx.from.id)) return ctx.reply("مرة واحدة فقط");
-  payLock.add(ctx.from.id);
-  ctx.reply("ابعت سكرين التحويل");
-});
+let castles = [];
 
-bot.on("photo",(ctx)=>{
-  if(!payLock.has(ctx.from.id)) return;
-  let fid=ctx.message.photo.pop().file_id;
-  bot.telegram.sendPhoto(ADMIN_ID,fid,{caption:"دفع من "+ctx.from.id, reply_markup:{inline_keyboard:[[{text:"تأكيد",callback_data:"ok_"+ctx.from.id},{text:"الغاء",callback_data:"no_"+ctx.from.id}]]}}).catch(()=>{});
-});
+const server = http.createServer((req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
 
-bot.action(/ok_(.+)/,(ctx)=>{
-  if(ctx.from.id!=ADMIN_ID) return;
-  let id=ctx.match[1];
-  if(users[id]) users[id].balance+=100;
-  payLock.delete(Number(id));
-  ctx.editMessageCaption("تم التأكيد");
-});
-bot.action(/no_(.+)/,(ctx)=>{
-  payLock.delete(Number(ctx.match[1]));
-  ctx.editMessageCaption("تم الالغاء");
-});
-
-bot.on("text",(ctx)=>{
-  let id=ctx.from.id; let t=ctx.message.text;
-  if(["المتجر","حسابي","المحفظة","الدعم","اضافة قلعة","مشاهدة قلعة","رجوع"].includes(t)) return;
-  if(addMode.has(id)){
-    addMode.delete(id);
-    castles.push({text:t.slice(0,400),seller:id});
-    return ctx.reply("تمت اضافة القلعة");
+  if (req.url === "/api/heroes") {
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    return res.end(JSON.stringify(heroes));
   }
-  if(isBad(t)){
-    if(!users[id]) users[id]={balance:0,warns:0};
-    users[id].warns++;
-    if(users[id].warns>=3){bans.push(id); return ctx.reply("تم حظرك نهائي"); }
-    return ctx.reply("تحذير "+users[id].warns+"/3 ممنوع الشتيمة");
+
+  if (req.url === "/" || req.url.startsWith("/app")) {
+    const fp = path.join(__dirname, "form.html");
+    if (fs.existsSync(fp)) {
+      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+      return res.end(fs.readFileSync(fp, "utf8"));
+    } else {
+      res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+      return res.end("form.html not found - ارفع form.html");
+    }
   }
+
+  res.writeHead(200, { "Content-Type": "text/plain" });
+  res.end("NADER STORE BLACK GOLD LIVE");
 });
 
-bot.launch().then(()=>console.log("LIVE"));
+server.listen(PORT, "0.0.0.0", () => {
+  console.log("Server running on " + PORT);
+});
+
+const HOST = process.env.RENDER_EXTERNAL_HOSTNAME || "nader-bot-v2.onrender.com";
+const APP_URL = https://${HOST}/app;
+
+bot.start((ctx) => {
+  const isAdmin = ctx.from.id === ADMIN_ID;
+  const kb = isAdmin
+    ? [["المتجر"], ["حسابي","المحفظة"], ["الدعم"], ["⚙️ لوحة الادمن"]]
+    : [["المتجر"], ["حسابي","المحفظة"], ["الدعم"]];
+  return ctx.reply(
+    "مرحبا بك في NADER STORE BLACK GOLD 🏰✨\nنسخة فخمة مختلفة عن بلقيس",
+    Markup.keyboard(kb).resize()
+  );
+});
+
+bot.hears("المتجر", (ctx) => {
+  return ctx.reply("اختر:", Markup.keyboard([["اضافة اعلان قلعة","مشاهدة القلاع"], ["رجوع"]]).resize());
+});
+
+bot.hears("رجوع", (ctx) => {
+  const isAdmin = ctx.from.id === ADMIN_ID;
+  const kb = isAdmin
+    ? [["المتجر"], ["حسابي","المحفظة"], ["الدعم"], ["⚙️ لوحة الادمن"]]
+    : [["المتجر"], ["حسابي","المحفظة"], ["الدعم"]];
+  return ctx.reply("القائمة الرئيسية", Markup.keyboard(kb).resize());
+});
+
+bot.hears("اضافة اعلان قلعة", (ctx) => {
+  return ctx.reply(
+    "افتح النموذج الفخم:",
+    Markup.inlineKeyboard([[Markup.button.webApp("🏰 فتح نموذج NADER BLACK GOLD", APP_URL)]])
+  );
+});
+
+bot.hears("مشاهدة القلاع", (ctx) => {
+  if (castles.length === 0) return ctx.reply("لا يوجد قلاع حاليا");
+  let t = 🏰 قلاع NADER STORE (${castles.length}):\n\n;
+  castles.slice(-10).reverse().forEach((c, i) => {
+    t += ${i+1}. ${c.sellerName} | لفل ${c.level} | ${c.power||""} | ابطال: ${(c.heroes||[]).join(", ")}\n;
+  });
+  return ctx.reply(t);
+});
+
+bot.hears("⚙️ لوحة الادمن", (ctx) => {
+  if (ctx.from.id !== ADMIN_ID) return ctx.reply("للادمن فقط");
+  return ctx.reply(
+⚙️ لوحة تحكم BLACK GOLD
+
+الاوامر:
+/addhero فرسان اسكندر
+/addhero رماة كوسم
+/addhero عجلات برقوق
+/addhero مشاة المختار
+
+/delhero فرسان اسكندر
+/heroes - عرض الكل
+/clearheroes - مسح الكل
+  );
+});
+
+bot.command("heroes", (ctx) => {
+  if (ctx.from.id !== ADMIN_ID) return;
+  return ctx.reply(
+فرسان: ${heroes.horses.join(", ") || "فاضي"}
+رماة: ${heroes.archers.join(", ") || "فاضي"}
+عجلات: ${heroes.wheels.join(", ") || "فاضي"}
+مشاة: ${heroes.inf.join(", ") || "فاضي"}
+  );
+});
+
+bot.command("addhero", (ctx) => {
+  if (ctx.from.id !== ADMIN_ID) return;
+  const parts = ctx.message.text.split(" ").slice(1);
+  if (parts.length < 2) return ctx.reply("مثال: /addhero رماة كوسم");
+  const cat = parts[0];
+  const name = parts.slice(1).join(" ").trim();
+  let key = "horses";
+  if (cat.includes("فرس")) key = "horses";
+  else if (cat.includes("رماة") || cat.includes("رماه")) key = "archers";
+  else if (cat.includes("عجل")) key = "wheels";
+  else key = "inf";
+  if (!heroes[key].includes(name)) heroes[key].push(name);
+  return ctx.reply(✅ تم اضافة ${name} الى ${cat});
+});
+bot.command("delhero", (ctx) => {
+  if (ctx.from.id !== ADMIN_ID) return;
+  const parts = ctx.message.text.split(" ").slice(1);
+  if (parts.length < 2) return ctx.reply("مثال: /delhero فرسان اسكندر");
+  const cat = parts[0];
+  const name = parts.slice(1).join(" ").trim();
+  let key = "horses";
+  if (cat.includes("فرس")) key = "horses";
+  else if (cat.includes("رماة") || cat.includes("رماه")) key = "archers";
+  else if (cat.includes("عجل")) key = "wheels";
+  else key = "inf";
+  heroes[key] = heroes[key].filter((n) => n !== name);
+  return ctx.reply(🗑️ تم حذف ${name});
+});
+
+bot.command("clearheroes", (ctx) => {
+  if (ctx.from.id !== ADMIN_ID) return;
+  heroes = { horses: [], archers: [], wheels: [], inf: [] };
+  return ctx.reply("تم مسح الكل");
+});
+
+bot.on("message", (ctx, next) => {
+  if (ctx.message && ctx.message.web_app_data) {
+    try {
+      const data = JSON.parse(ctx.message.web_app_data.data);
+      castles.push(data);
+      return ctx.reply(✅ تم نشر عرضك!\n${data.sellerName} - قلعة ${data.level}\nالابطال: ${(data.heroes||[]).join(", ")});
+    } catch (e) {
+      return ctx.reply("خطأ في حفظ البيانات");
+    }
+  }
+  return next();
+});
+
+bot.launch().then(() => {
+  console.log("BOT LIVE: " + APP_URL);
+});
+
+process.once("SIGINT", () => bot.stop("SIGINT"));
+process.once("SIGTERM", () => bot.stop("SIGTERM"));
