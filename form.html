@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NADER STORE</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+body{margin:0;padding:14px;font-family:Tahoma;background:#0f1c33;color:#fff}
+.card{background:rgba(255,255,255,.06);padding:12px;border-radius:14px;margin-bottom:12px}
+input,select{width:100%;padding:12px;margin:6px 0;border-radius:10px;border:1px solid #2a3b5a;background:#0a1225;color:#fff}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;background:#fbbf24;font-weight:900;font-size:16px}
+</style>
+</head>
+<body>
+<h3 style="text-align:center;color:#fbbf24">🏰 NADER STORE</h3>
+<div class="card">
+<label>اسم البائع *</label><input id="seller">
+<label>رقم التواصل *</label><input id="phone">
+<label>مستوى 1-35 *</label><select id="level"><option value="">اختر</option></select>
+<label>السعر *</label><input id="price">
+</div>
+<button class="btn" onclick="send()">نشر الاعلان ✨</button>
+<script>
+var levelSel=document.getElementById('level');
+for(var i=1;i<=35;i++){var o=document.createElement('option');o.value=i;o.text='مستوى '+i;levelSel.appendChild(o);}
+var tg=window.Telegram.WebApp;tg.ready();tg.expand();
+function send(){
+  var data={
+    sellerName:document.getElementById('seller').value,
+    phone:document.getElementById('phone').value,
+    level:document.getElementById('level').value,
+    price:document.getElementById('price').value
+  };
+  if(!data.sellerName!data.phone!data.level||!data.price){alert('اكمل البيانات');return;}
+  tg.sendData(JSON.stringify(data));
+  setTimeout(function(){tg.close();},300);
+}
+</script>
+</body>
+</html>
