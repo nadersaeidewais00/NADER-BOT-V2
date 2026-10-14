@@ -4,10 +4,10 @@ const path = require('path');
 const TOKEN = process.env.BOT_TOKEN;
 const ADMIN_IDS = ['8604068151'];
 const API = 'https://api.telegram.org/bot' + TOKEN;
-
+}
 let offset = 0;
 let castles = [];
-
+}
 function isAdmin(id){return ADMIN_IDS.includes(String(id));}
 async function call(m,b){
   const r = await fetch(API+'/'+m,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});
