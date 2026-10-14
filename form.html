@@ -1,1 +1,95 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NADER STORE</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:14px;font-family:Tahoma;background:radial-gradient(900px 500px at 50% -10%,#1e3a5f,#0a1120);color:#e2e8f0}
+.card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:14px;margin-bottom:12px;backdrop-filter:blur(8px)}
+.title{display:flex;gap:8px;align-items:center;font-weight:900;font-size:13px;margin-bottom:10px;color:#f1f5f9}.dot{width:8px;height:8px;border-radius:50%;background:#fbbf24;box-shadow:0 0 10px #fbbf24}
+label{font-size:11px;color:#94a3b8;display:block;margin:10px 0 5px}input,select{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:#0a1225;color:#fff;font-size:14px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.hero-bar{background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);color:#fde68a;padding:9px 12px;border-radius:10px;font-weight:900;font-size:12px;margin:16px 0 8px;display:flex;justify-content:space-between}
+.hero-row{display:grid;grid-template-columns:1fr 105px;gap:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:9px;margin-bottom:6px;align-items:center}
+.hero-name{font-size:12px;font-weight:700}
+.btn{width:100%;padding:15px;border:none;border-radius:14px;background:linear-gradient(90deg,#fbbf24,#f59e0b);color:#111827;font-weight:900;font-size:16px;margin-top:10px}
+</style>
+</head>
+<body>
+<div style="text-align:center;padding:10px 0"><h2 style="margin:0;color:#fbbf24">🏰 NADER STORE</h2><small style="color:#7c8aa0">تصميم هادئ ومريح للعين</small></div>
 
+<div class="card"><div class="title"><div class="dot"></div>بيانات البائع</div>
+<label>اسم البائع *</label><input id="sellerName" placeholder="مثال: نادر">
+<label>رقم التواصل *</label><input id="phone" placeholder="01xxxxxxxxx" inputmode="numeric"></div>
+
+<div class="card"><div class="title"><div class="dot"></div>مستوى القلعة والسعر</div>
+<label>مستوى القلعة 1-35 *</label><select id="levelSelect"><option value="">-- اختر المستوى --</option></select>
+<label>السعر *</label><input id="price" placeholder="مثال: 400000" inputmode="numeric"></div>
+
+<div class="card"><div class="title"><div class="dot"></div>قوة القلعة</div>
+<div class="row2"><div><label>تصفير</label><input id="tasfir" placeholder="0" inputmode="numeric"></div><div><label>تعويض</label><input id="taweed" placeholder="0"></div><div><label>علوم</label><input id="oloum" placeholder="0"></div><div><label>جنود</label><input id="jonoud" placeholder="0"></div><div><label>شارات المجد</label><input id="majd" placeholder="0"></div><div><label>اشعال</label><input id="ishal" placeholder="0"></div></div></div>
+
+<div class="card"><div class="title"><div class="dot"></div>العتاد</div>
+<div class="row2"><div><label>عتاد اخضر</label><input id="at_green" placeholder="0"></div><div><label>عتاد ازرق</label><input id="at_blue" placeholder="0"></div><div><label>عتاد بنفسجي</label><input id="at_purple" placeholder="0"></div><div><label>عتاد ذهبي</label><input id="at_gold" placeholder="0"></div></div></div>
+
+<div class="card"><div class="title"><div class="dot"></div>الراية</div>
+<div class="row2"><div><label>حيوية المشاة %</label><input id="hay_mosah" placeholder="0"></div><div><label>حيوية العجلات %</label><input id="hay_ajalat" placeholder="0"></div></div></div>
+
+<div class="card"><div class="title"><div class="dot"></div>الابطال - النجوم 1 الى 10</div>
+
+<div class="hero-bar"><span>المشاة</span><small>2</small></div>
+<div class="hero-row"><span class="hero-name">محمد الثاني</span><select id="m1"></select></div>
+<div class="hero-row"><span class="hero-name">عمر المختار</span><select id="m2"></select></div>
+<div class="hero-bar"><span>الفرسان - 6</span><small>الاسماء اللي طلبتها</small></div>
+<div class="hero-row"><span class="hero-name">جوهر الصقلي</span><select id="f1"></select></div>
+<div class="hero-row"><span class="hero-name">بارون</span><select id="f2"></select></div>
+<div class="hero-row"><span class="hero-name">اسكندر</span><select id="f3"></select></div>
+<div class="hero-row"><span class="hero-name">بوراك</span><select id="f4"></select></div>
+<div class="hero-row"><span class="hero-name">عبدالرحمن</span><select id="f5"></select></div>
+<div class="hero-row"><span class="hero-name">هارون</span><select id="f6"></select></div>
+
+<div class="hero-bar"><span>الرماة - 7</span></div>
+<div class="hero-row"><span class="hero-name">حليمة خاتون</span><select id="r1"></select></div>
+<div class="hero-row"><span class="hero-name">زرقاء اليمامة</span><select id="r2"></select></div>
+<div class="hero-row"><span class="hero-name">اتيلا الهون</span><select id="r3"></select></div>
+<div class="hero-row"><span class="hero-name">قوسين</span><select id="r4"></select></div>
+<div class="hero-row"><span class="hero-name">اورخان</span><select id="r5"></select></div>
+<div class="hero-row"><span class="hero-name">قايتباي</span><select id="r6"></select></div>
+<div class="hero-row"><span class="hero-name">خير الدين بربروس</span><select id="r7"></select></div>
+
+<div class="hero-bar"><span>العجلات - 6</span></div>
+<div class="hero-row"><span class="hero-name">صلاح الدين</span><select id="c1"></select></div>
+<div class="hero-row"><span class="hero-name">قطز</span><select id="c2"></select></div>
+<div class="hero-row"><span class="hero-name">برقوق</span><select id="c3"></select></div>
+<div class="hero-row"><span class="hero-name">ملك ابن الرايب</span><select id="c4"></select></div>
+<div class="hero-row"><span class="hero-name">كافور</span><select id="c5"></select></div>
+<div class="hero-row"><span class="hero-name">نفرتيتي</span><select id="c6"></select></div>
+</div>
+
+<button class="btn" onclick="sendData()">نشر الاعلان ✨</button>
+<div style="text-align:center;color:#4b5a73;font-size:10px;margin:12px">NADER STORE 2026</div>
+
+<script>
+(function(){
+  var l=document.getElementById('levelSelect');
+  for(var i=1;i<=35;i++){var o=document.createElement('option');o.value=i;o.textContent='مستوى '+i;l.appendChild(o);}
+  var ids=['m1','m2','f1','f2','f3','f4','f5','f6','r1','r2','r3','r4','r5','r6','r7','c1','c2','c3','c4','c5','c6'];
+  ids.forEach(function(id){
+    var s=document.getElementById(id);
+    var d=document.createElement('option');d.value='';d.textContent='☆ النجوم';s.appendChild(d);
+    for(var n=1;n<=10;n++){var op=document.createElement('option');op.value=n;op.textContent=n+' ★';s.appendChild(op);}
+  });
+})();
+var tg=window.Telegram.WebApp;tg.ready();tg.expand();
+function gv(id){return document.getElementById(id).value.trim();}
+function sendData(){
+  var data={sellerName:gv('sellerName'),phone:gv('phone'),level:gv('levelSelect'),price:gv('price')};
+  if(!data.sellerName!data.phone!data.level||!data.price){alert('اكمل البيانات الاساسية');return;}
+  tg.sendData(JSON.stringify(data));
+  setTimeout(function(){tg.close();},300);
+}
+</script>
+</body>
+  </html>
