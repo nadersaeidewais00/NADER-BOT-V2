@@ -1,1 +1,72 @@
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NADER STORE</title><script src="https://telegram.org/js/telegram-web-app.js"></script><style>
+body{background:#0f172a;color:#fff;font-family:Tahoma;padding:12px}
+.card{background:#1e293b;padding:14px;border-radius:12px;margin-bottom:12px;border:1px solid #334155}
+h2{color:#fbbf24;text-align:center} h3{color:#38bdf8;margin:8px 0}
+input,select{width:100%;padding:11px;margin:5px 0;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#fff;box-sizing:border-box}
+label{font-size:13px;color:#cbd5e1}
+.row{display:grid;grid-template-columns:2fr 1fr;gap:8px;align-items:end;margin-bottom:8px;background:#0f172a;padding:8px;border-radius:8px}
+.btn{background:#f59e0b;color:#000;padding:16px;width:100%;border:none;border-radius:12px;font-weight:bold;font-size:19px;margin-top:15px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.small{color:#94a3b8;font-size:11px;text-align:center}
+</style></head><body>
+<h2>NADER STORE - عرض قلعتك</h2><p class="small">English numbers only - الارقام بالانجليزية</p>
 
+<div class="card"><h3>بيانات البائع</h3><label>اسم البائع *</label><input id="sellerName"><label>رقم التواصل *</label><input id="phone" type="tel"></div>
+
+<div class="card"><h3>معلومات القلعة - مستوى 1-35</h3><label>مستوى القلعة *</label><select id="level"><option value="">اختر من 1 الى 35</option></select><label>السعر *</label><input id="price" type="number" value="350000"></div>
+
+<div class="card"><h3>قوة القلعة</h3><div class="grid2">
+<div><label>قوة التصفير</label><input id="tasfir" type="number" value="0"></div><div><label>قوة التعويض</label><input id="taweed" type="number" value="0"></div>
+<div><label>قوة العلوم</label><input id="oloum" type="number" value="0"></div><div><label>قوة الجنود</label><input id="jonoud" type="number" value="0"></div>
+<div><label>شارات المجد</label><input id="majd" type="number" value="0"></div><div><label>قوة الاشعال</label><input id="ishal" type="number" value="0"></div>
+</div></div>
+
+<div class="card"><h3>العتاد - اخضر - ازرق - بنفسجي - ذهبي</h3><div class="grid2">
+<div><label>عتاد اخضر</label><input id="at_green" type="number" value="0"></div><div><label>عتاد ازرق</label><input id="at_blue" type="number" value="0"></div>
+<div><label>عتاد بنفسجي</label><input id="at_purple" type="number" value="0"></div><div><label>عتاد ذهبي</label><input id="at_gold" type="number" value="0"></div>
+</div></div>
+
+<div class="card"><h3>الراية - حيوية</h3><div class="grid2">
+<div><label>حيوية المشاة %</label><input id="hay_mosah" type="number" value="0"></div><div><label>حيوية العجلات %</label><input id="hay_ajalat" type="number" value="0"></div>
+</div></div>
+
+<div class="card"><h3>👑 الابطال - كل بطل قدامه عدد النجوم</h3>
+<p class="small">المشاة ثابت</p>
+<div class="row"><div><label>المشاة - ثابت</label><select><option>ثابت</option></select></div><div><label>النجوم</label><select><option>ثابت</option></select></div></div>
+
+<p>الفرسان - 6 ابطال (البطل + النجوم)</p>
+<div id="forsan"></div>
+
+<p>الرماة - 7 ابطال (البطل + النجوم)</p>
+<div id="romah"></div>
+</div>
+
+<button class="btn" onclick="send()">اعرض الان - NADER STORE</button>
+
+<script>
+for(let i=1;i<=35;i++){let o=document.createElement('option');o.value=i;o.textContent=i;level.appendChild(o);}
+const heroesList=["محمد الفاتح","محمد الثاني","صلاح الدين الايوبي","جوهر الصقلي","عمر المختار","خالد بن الوليد","بيبرس","أرطغرل","عثمان","حليمة خاتون","السلطان سليمان","طارق بن زياد"];
+function makeHeroRow(containerId, prefix, count){
+  const cont=document.getElementById(containerId);
+  for(let i=1;i<=count;i++){
+    const div=document.createElement('div'); div.className='row';
+    const sel1=document.createElement('select'); sel1.id=prefix+i+"_name";
+    const opt0=document.createElement('option'); opt0.value=""; opt0.textContent="اختر "+prefix+" "+i+" - اسم البطل"; sel1.appendChild(opt0);
+    heroesList.forEach(h=>{let o=document.createElement('option');o.value=h;o.textContent=h;sel1.appendChild(o);});
+    const sel2=document.createElement('select'); sel2.id=prefix+i+"_stars";
+    ["عدد النجوم","1 نجمة","2 نجمة","3 نجوم","4 نجوم","5 نجوم","6 نجوم","7 نجوم"].forEach((s,idx)=>{let o=document.createElement('option');o.value=idx;o.textContent=s;sel2.appendChild(o);});
+    const d1=document.createElement('div'); const l1=document.createElement('label'); l1.textContent="البطل "+prefix+" "+i; const d2=document.createElement('div'); const l2=document.createElement('label'); l2.textContent="عدد النجوم";
+    d1.appendChild(l1); d1.appendChild(sel1); d2.appendChild(l2); d2.appendChild(sel2);
+    div.appendChild(d1); div.appendChild(d2); cont.appendChild(div);
+  }
+}
+makeHeroRow("forsan","فرسان",6);
+makeHeroRow("romah","رماة",7);
+
+const tg=Telegram.WebApp; tg.ready(); tg.expand();
+function send(){
+  const getHeroes=(pref,c)=>{let arr=[]; for(let i=1;i<=c;i++){let n=document.getElementById(pref+i+"_name").value; let s=document.getElementById(pref+i+"_stars").value; if(n) arr.push({name:n,stars:s});} return arr;}
+  const data={
+    sellerName:sellerName.value, phone:phone.value, level:level.value, price:price.value,
+    powers:{tasfir:tasfir.value,taweed:taweed.value,oloum:oloum.value,jonoud:jonoud.value,majd:majd.value,ishal:ishal.value},
+    atad
