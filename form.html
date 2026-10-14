@@ -1,1 +1,54 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NADER STORE</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{box-sizing:border-box}body{background:#0b1220;color:#fff;font-family:Tahoma;padding:12px;margin:0}
+.card{background:#151e32;border:1px solid #23314f;border-radius:14px;padding:14px;margin-bottom:12px}
+h2{text-align:center;color:#fbbf24;margin:10px 0}h3{color:#38bdf8;margin:8px 0}
+label{font-size:12px;color:#94a3b8;display:block;margin:4px 2px}
+input,select{width:100%;padding:12px;border-radius:10px;border:1px solid #2f3d5f;background:#0b1220;color:#fff}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hero{display:grid;grid-template-columns:1.5fr .7fr;gap:10px;align-items:end;margin-bottom:10px;background:#0b1220;border:1px solid #223151;border-radius:10px;padding:10px}
+.name{background:#1e293b;padding:12px;border-radius:8px;text-align:center;font-weight:bold;color:#fbbf24;border:1px solid #334155}
+.sec{color:#fbbf24;font-weight:bold;margin:15px 0 6px}
+.btn{width:100%;background:#f59e0b;color:#000;padding:16px;border:none;border-radius:14px;font-weight:900;font-size:18px;margin-top:12px}
+</style>
+</head>
+<body>
+<h2>🏰 NADER STORE</h2>
 
+<div class="card"><h3>بيانات البائع</h3><label>اسم البائع *</label><input id="sellerName"><label>رقم التواصل *</label><input id="phone" type="tel"></div>
+<div class="card"><h3>مستوى القلعة 1-35</h3><select id="level"><option value="">اختر 1-35</option></select><label>السعر *</label><input id="price" type="number" value="350000"></div>
+<div class="card"><h3>قوة القلعة</h3><div class="row2"><div><label>تصفير</label><input id="tasfir" type="number" value="0"></div><div><label>تعويض</label><input id="taweed" type="number" value="0"></div><div><label>علوم</label><input id="oloum" type="number" value="0"></div><div><label>جنود</label><input id="jonoud" type="number" value="0"></div><div><label>مجد</label><input id="majd" type="number" value="0"></div><div><label>اشعال</label><input id="ishal" type="number" value="0"></div></div></div>
+<div class="card"><h3>العتاد - اخضر ازرق بنفسجي ذهبي</h3><div class="row2"><div><label>اخضر</label><input id="at_green" type="number" value="0"></div><div><label>ازرق</label><input id="at_blue" type="number" value="0"></div><div><label>بنفسجي</label><input id="at_purple" type="number" value="0"></div><div><label>ذهبي</label><input id="at_gold" type="number" value="0"></div></div></div>
+<div class="card"><h3>الراية - حيوية</h3><div class="row2"><div><label>حيوية المشاة %</label><input id="hay_mosah" type="number" value="0"></div><div><label>حيوية العجلات %</label><input id="hay_ajalat" type="number" value="0"></div></div></div>
+
+<div class="card">
+<h3>👑 الابطال</h3>
+
+<div class="sec">المشاة - 2 ابطال</div>
+<div class="hero"><div><label>البطل</label><div class="name">محمد الثاني</div></div><div><label>النجوم</label><select id="m1"><option>1 نجمة</option><option>2 نجوم</option><option>3 نجوم</option><option>4 نجوم</option><option>5 نجوم</option><option>6 نجوم</option><option>7 نجوم</option><option>8 نجوم</option><option>9 نجوم</option><option>10 نجوم</option></select></div></div>
+<div class="hero"><div><label>البطل</label><div class="name">عمر المختار</div></div><div><label>النجوم</label><select id="m2"><option>1 نجمة</option><option>2 نجوم</option><option>3 نجوم</option><option>4 نجوم</option><option>5 نجوم</option><option>6 نجوم</option><option>7 نجوم</option><option>8 نجوم</option><option>9 نجوم</option><option>10 نجوم</option></select></div></div>
+
+<div class="sec">الفرسان - 6 ابطال</div>
+<div class="hero"><div><div class="name">محمد الفاتح</div></div><div><select id="f1"><option>1 نجمة</option><option>2 نجوم</option><option>3 نجوم</option><option>4 نجوم</option><option>5 نجوم</option><option>6 نجوم</option><option>7 نجوم</option><option>8 نجوم</option><option>9 نجوم</option><option>10 نجوم</option></select></div></div>
+نجوم</option></select></div></div>
+
+</div>
+<button class="btn" onclick="send()">اعرض الان - NADER STORE</button>
+<script>
+for(let i=1;i<=35;i++){let o=document.createElement('option');o.value=i;o.textContent=i;level.appendChild(o);}
+const tg=Telegram.WebApp;tg.ready();tg.expand();
+function send(){
+const g=id=>document.getElementById(id)?.value||"";
+const data={sellerName:g('sellerName'),phone:g('phone'),level:g('level'),price:g('price'),powers:{tasfir:g('tasfir'),taweed:g('taweed'),oloum:g('oloum'),jonoud:g('jonoud'),majd:g('majd'),ishal:g('ishal')},atad:{green:g('at_green'),blue:g('at_blue'),purple:g('at_purple'),gold:g('at_gold')},hayawia:{mosah:g('hay_mosah'),ajalat:g('hay_ajalat')},abtal:{moshah:[{name:"محمد الثاني",stars:g('m1')},{name:"عمر المختار",stars:g('m2')}],forsan:[{name:"محمد الفاتح",stars:g('f1')},{name:"صلاح الدين الايوبي",stars:g('f2')},{name:"جوهر الصقلي",stars:g('f3')},{name:"محمد الثاني",stars:g('f4')},{name:"عمر المختار",stars:g('f5')},{name:"حليمة خاتون",stars:g('f6')}],romah:[{name:"حليمة خاتون",stars:g('r1')},{name:"أرطغرل",stars:g('r2')},{name:"محمد الفاتح",stars:g('r3')},{name:"محمد الثاني",stars:g('r4')},{name:"صلاح الدين الايوبي",stars:g('r5')},{name:"جوهر الصقلي",stars:g('r6')},{name:"عمر المختار",stars:g('r7')}]}};
+if(!data.sellerName!data.phone!data.level||!data.price){alert('اكمل البيانات *');return;}
+tg.sendData(JSON.stringify(data));tg.close();
+}
+</script>
+</body>
+</html>
