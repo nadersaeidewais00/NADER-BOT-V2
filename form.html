@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>عرض قلعة - NADER STORE</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{box-sizing:border-box;font-family:Tahoma,Arial}
+body{margin:0;background:#0a1929;color:#fff;padding:12px}
+.container{max-width:520px;margin:0 auto}
+.header{background:linear-gradient(135deg,#112a46,#0a1929);border:1px solid #d4af37;border-radius:16px;padding:16px;text-align:center;margin-bottom:12px}
+.header h1{margin:0;font-size:18px;color:#d4af37}
+.card{background:#122c4a;border:1px solid #1e4a7a;border-radius:14px;padding:14px;margin-bottom:12px}
+.card-title{display:flex;gap:8px;margin-bottom:10px;font-weight:bold;color:#d4af37;font-size:14px}
+.num-badge{background:#d4af37;color:#000;width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:bold}
+label{font-size:12px;color:#c2d6e9;margin-bottom:4px;display:block}
+input,select{width:100%;background:#0d2138;border:1px solid #2a5a8a;border-radius:10px;padding:10px;color:#fff;font-size:14px;text-align:center;direction:ltr}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.hero-row{display:flex;justify-content:space-between;align-items:center;background:#0d2138;border:1px solid #1e4a7a;border-radius:10px;padding:8px 10px;margin-bottom:8px}
+.hero-controls{display:flex;gap:8px;align-items:center}
+.hero-controls select{width:70px;padding:6px}
+.hero-check{width:18px;height:18px;accent-color:#d4af37}
+.atad-box{background:#0d2138;border:1px solid #1e4a7a;border-radius:12px;padding:10px;text-align:center}
+.submit{width:100%;background:linear-gradient(135deg,#d4af37,#b8941f);color:#000;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:bold;margin-top:10px;cursor:pointer}
+.req{color:#ff4444}
+.small-note{font-size:10px;color:#8aa6c3;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header"><h1>🏰 عرض قلعتك للبيع</h1><p>الارقام بالانجليزية فقط</p></div>
+<div class="card">
+<div class="card-title"><span class="num-badge">01</span> بيانات البائع</div>
+<div class="grid2"><div><label>اسم البائع <span class="req">*</span></label><input id="sellerName" placeholder="نادر"></div><div><label>رقم التواصل <span class="req">*</span></label><input id="phone" type="tel" placeholder="01xxxxxxxxx"></div></div>
+</div>
+<div class="card">
+<div class="card-title"><span class="num-badge">02</span> معلومات القلعة</div>
+<div class="grid2"><div><label>مستوى القلعة 1-35 <span class="req">*</span></label><select id="level"></select></div><div><label>السعر المطلوب <span class="req">*</span></label><input id="price" type="number" placeholder="350000"></div></div>
+<div style="margin-top:12px"><label>قوة القلعة</label>
+<div class="grid2" style="margin-top:6px">
+<div><label>قوة التصفير</label><input id="p_tasfir" type="number" placeholder="0"></div>
+<div><label>قوة التعويض</label><input id="p_taweed" type="number" placeholder="0"></div>
+<div><label>قوة العلوم</label><input id="p_oloum" type="number" placeholder="0"></div>
+<div><label>عدد الجنود</label><input id="p_jonoud" type="number" placeholder="0"></div>
+<div><label>شارات المجد</label><input id="p_majd" type="number" placeholder="0"></div>
+<div><label>قوة الإشعال</label><input id="p_ishal" type="number" placeholder="0"></div>
+</div></div>
+</div>
+<div class="card"><div class="card-title"><span class="num-badge">03</span> المشاة - ثابت</div><div id="infList"></div></div>
+<div class="card"><div class="card-title"><span class="num-badge">04</span> الفرسان - 6 ابطال</div><div id="horsesList"></div></div>
+<div class="card"><div class="card-title"><span class="num-badge">05</span> الرماة - 7 ابطال</div><div id="archersList"></div></div>
