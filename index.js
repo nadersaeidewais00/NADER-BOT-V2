@@ -1,15 +1,26 @@
+const http = require('http');
 const { Telegraf } = require('telegraf');
 require('dotenv').config();
 
 const token = process.env.TELEGRAM_BOT_TOKEN || process.env.BOT_TOKEN;
+const PORT = process.env.PORT || 10000;
+
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+  res.end('Nader Store is Running ✅');
+});
+
+server.listen(PORT, () => {
+  console.log('Running on ' + PORT);
+});
 
 if (!token) {
-  console.log('❌ مفيش توكن! حط TELEGRAM_BOT_TOKEN في Render Environment');
+  console.log('❌ TELEGRAM_BOT_TOKEN missing');
 } else {
   const bot = new Telegraf(token);
 
   bot.start((ctx) => {
-    ctx.reply('أهلا بيك في Nader Store 🏰\n\nاختار من القايمة:', {
+    ctx.reply('أهلا بيك في Nader Store 🏰', {
       reply_markup: {
         keyboard: [
           [{ text: '🏪 المتجر' }, { text: '💰 المحفظة' }],
@@ -20,16 +31,12 @@ if (!token) {
     });
   });
 
-  bot.hears('🏪 المتجر', (ctx) => ctx.reply('المتجر قريباً... 🏪'));
-  bot.hears('💰 المحفظة', (ctx) => ctx.reply('محفظتك: 0 جنيه 💰'));
-  bot.hears('👤 حسابي', (ctx) => ctx.reply('حسابك... 👤'));
-  bot.hears('🎧 الدعم', (ctx) => ctx.reply('الدعم الفني @... 🎧'));
+  bot.hears('🏪 المتجر', (ctx) => ctx.reply('المتجر قريبا 🏪'));
+  bot.hears('💰 المحفظة', (ctx) => ctx.reply('محفظتك 0 جنيه 💰'));
+  bot.hears('👤 حسابي', (ctx) => ctx.reply('حسابك 👤'));
+  bot.hears('🎧 الدعم', (ctx) => ctx.reply('كلم الدعم 🎧'));
 
   bot.launch().then(() => {
-    console.log('✅ Nader Store Bot Started');
+    console.log('✅ Bot Started');
   });
-
-  // عشان Render ميفصلش
-  const http = require('http');
-  http.createServer((req, res) => res.end('Bot Running ✅')).listen(process.env.PORT || 10000);
 }
