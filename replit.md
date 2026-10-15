@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<meta charset="UTF-8">
+<title>Nader Store</title>
+<pre style="white-space:pre-wrap;word-wrap:break-word;background:#000;color:#fff;padding:20px;margin:0;font-size:16px;line-height:1.8">
+# متجر Nader Store
+
+متجر Telegram عربي لحسابات لعبة Conquerors Golden Age، مع محفظة بالجنيه المصري ومراجعة يدوية للتحويلات عبر فودافون كاش وإنستا باي.
+
+## Run & Operate
+
+- pnpm --filter @workspace/api-server run dev — تشغيل خادم التطوير
+- pnpm run typecheck — فحص الأنواع في الحزم
+- pnpm run build — فحص وبناء المشروع
+- pnpm --filter @workspace/db run push — تطبيق تغييرات قاعدة بيانات التطوير فقط
+- السر TELEGRAM_BOT_TOKEN — رمز البوت من BotFather
+- المتغير ADMIN_TELEGRAM_ID — معرّف المشرف الوحيد
+- ENABLE_TELEGRAM_BOT=true مفعّل في التشغيل المنشور؛ يبقى الاستطلاع متوقفًا في التطوير لتجنب تشغيل جلستين للبوت.
+
+## Stack
+
+- pnpm workspaces, Node.js 24, TypeScript 5.9
+- API: Express 5
+- DB: PostgreSQL + Drizzle ORM
+- Validation: Zod (zod/v4), drizzle-zod
+- API codegen: Orval (from OpenAPI spec)
+- Build: esbuild (CJS bundle)
+
+## Where things live
+
+ملفات البوت في artifacts/api-server/src/telegram/، ومخطط طلبات المتجر والمحفظة والدعم في lib/db/src/schema/telegram-store.ts.
+
+## Architecture decisions
+
+- تُراجع التحويلات يدويًا من لوحة /admin؛ لا توجد مطابقة دفع آلية.
+- تُضبط بيانات الاستلام من /admin، وتظهر للعملاء عند الدفع.
+- يرسل المشرف بيانات الحساب للمشتري بعد تأكيد الدفع؛ لا تُحفظ بيانات الدخول في سجل الطلب.
+
+## Product
+
+يعرض /start أزرارًا عربية للمتجر والمحفظة والحساب والدعم. يستطيع العملاء شراء الحسابات أو شحن الرصيد، بينما يراجع المشرف التحويلات ويرسل بيانات الحساب. يحتاج التشغيل المستمر إلى نشر Reserved VM.
+
+## User preferences
+
+جميع رسائل وأزرار البوت باللغة العربية. العملة جنيه مصري، ووسائل التحويل اليدوي فودافون كاش وإنستا باي.
+
+## Gotchas
+
+- يجب ضبط ADMIN_TELEGRAM_ID قبل تشغيل الاستطلاع في الإنتاج.
+- يجب أن يبدأ المشرف محادثة مع البوت مرة واحدة حتى تصله إشعارات الطلبات.
+- يطبّق Replit تغييرات مخطط الإنتاج عند النشر؛ أمر push مخصص لقاعدة بيانات التطوير.
+
+## Pointers
+
+- راجع مهارة pnpm-workspace لبنية الحزم وإعداد TypeScript.
+</pre>
+</html>
