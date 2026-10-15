@@ -19,8 +19,7 @@ async function call(method, body) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
-  const j = await res.json();
-  return j;
+  return res.json();
 }
 
 function mainMenu(isAdminUser) {
@@ -44,126 +43,116 @@ function storeKeyboard() {
 }
 
 async function handleUpdate(u) {
-  try {
-    if (u.message) {
-      const chatId = u.message.chat.id;
-      const fromId = u.message.from.id;
-      const text = (u.message.text || "").trim();
+  if (u.message) {
+    const chatId = u.message.chat.id;
+    const fromId = u.message.from.id;
+    const text = (u.message.text || "").trim();
 
-      if (text === "/start") {
-        await call('sendMessage', {
-          chat_id: chatId,
-          text: مرحبا ${u.message.from.first_name || ''} في NADER STORE\nاختار من القائمة تحت:,
-          reply_markup: {
-            remove_keyboard: true,
-            inline_keyboard: mainMenu(isAdmin(fromId)).inline_keyboard
-          }
-        });
-      }
-
-      if (u.message.web_app_data) {
-        const data = u.message.web_app_data.data;
-        await call('sendMessage', {
-          chat_id: chatId,
-          text: تم استلام طلبك: ${data}
-        });
-      }
-    }
-
-    if (u.callback_query) {
-      const q = u.callback_query;
-      const chatId = q.message.chat.id;
-      const fromId = q.from.id;
-      const data = q.data;
-
-      if (data === "home" || data === "start") {
-        await call('sendMessage', {
-          chat_id: chatId,
-          text: "القائمة الرئيسية:",
-          reply_markup: mainMenu(isAdmin(fromId))
-        });
-      }
-
-      if (data === "store") {
-        await call('sendMessage', {
-          chat_id: chatId,
-          text: "اضغط لفتح المتجر:",
-          reply_markup: storeKeyboard()
-        });
-      }
-
-      if (data === "account") {
-        await call('sendMessage', {
-          chat_id: chatId,
-          text: حسابك\nالايدي: ${fromId},
-          reply_markup: mainMenu(isAdmin(fromId))
-        });
-      }
-
-      if (data === "support") {
-        await call('sendMessage', {
-          chat_id: chatId,
-          text: "الدعم: @NADER_STORE",
-          reply_markup: mainMenu(isAdmin(fromId))
-        });
-      }
-
-      if (data === "wallet") {
-        await call('sendMessage', {
-          chat_id: chatId,
-          text: "محفظتك: 0 جنيه",
-          reply_markup: mainMenu(isAdmin(fromId))
-        });
-      }
-
-      if (data === "admin") {
-        if (isAdmin(fromId)) {
-          await call('sendMessage', {
-            chat_id: chatId,
-            text: "لوحة تحكم الادمن",
-            reply_markup: mainMenu(true)
-          });
+    if (text === "/start") {
+      await call('sendMessage', {
+        chat_id: chatId,
+        text: مرحبا في NADER STORE\nاختار من القائمة:,
+        reply_markup: {
+          remove_keyboard: true,
+          inline_keyboard: mainMenu(isAdmin(fromId)).inline_keyboard
         }
-      }
-
-      await call('answerCallbackQuery', { callback_query_id: q.id });
+      });
     }
-  } catch (e) {
-    console.log("handle error:", e.message);
+
+    if (u.message.web_app_data) {
+      await call('sendMessage', {
+        chat_id: chatId,
+        text: تم استلام طلبك: ${u.message.web_app_data.data}
+      });
+    }
+  }
+
+  if (u.callback_query) {
+    const q = u.callback_query;
+    const chatId = q.message.chat.id;
+    const fromId = q.from.id;
+    const data = q.data;
+
+    if (data === "home") {
+      await call('sendMessage', {
+        chat_id: chatId,
+        text: "القائمة الرئيسية:",
+        reply_markup: mainMenu(isAdmin(fromId))
+      });
+    }
+
+    if (data === "store") {
+      await call('sendMessage', {
+        chat_id: chatId,
+        text: "افتح المتجر:",
+        reply_markup: storeKeyboard()
+      });
+    }
+
+    if (data === "account") {
+      await call('sendMessage', {
+        chat_id: chatId,
+        text: حسابك: ${fromId},
+        reply_markup: mainMenu(isAdmin(fromId))
+      });
+    }
+
+    if (data === "support") {
+      await call('sendMessage', {
+        chat_id: chatId,
+        text: "للدعم: @NADER",
+        reply_markup: mainMenu(isAdmin(fromId))
+      });
+    }
+
+    if (data === "wallet") {
+      await call('sendMessage', {
+        chat_id: chatId,
+        text: "محفظتك: 0 جنيه",
+        reply_markup: mainMenu(isAdmin(fromId))
+      });
+    }
+
+    if (data === "admin" && isAdmin(fromId)) {
+      await call('sendMessage', {
+        chat_id: chatId,
+        text: "لوحة الادمن",
+        reply_markup: mainMenu(true)
+      });
+    }
+
+    await call('answerCallbackQuery', { callback_query_id: q.id });
   }
 }
 
 async function polling() {
-  console.log("BOT STARTED POLLING");
+  console.log("BOT STARTED");
   while (true) {
     try {
       const r = await call('getUpdates', { offset: offset, timeout: 25 });
-      if (r.result && r.result.length > 0) {
+      if (r.result) {
         for (const up of r.result) {
           await handleUpdate(up);
           offset = up.update_id + 1;
         }
       }
     } catch (e) {
-      console.log("polling error", e.message);
-      await new Promise(res => setTimeout(res, 3000));
+      console.log(e.message);
+      await new Promise(x => setTimeout(x, 2000));
     }
   }
-        }
+}
+
 const server = http.createServer((req, res) => {
   if (req.url.includes("form.html")) {
-    try {
-      const p = path.join(__dirname, "form.html");
-      if (fs.existsSync(p)) {
-        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-        return res.end(fs.readFileSync(p, 'utf8'));
-      }
-    } catch (e) {}
+    const p = path.join(__dirname, "form.html");
+    if (fs.existsSync(p)) {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      return res.end(fs.readFileSync(p));
+    }
   }
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end("NADER BOT RUNNING");
+  res.writeHead(200);
+  res.end("RUNNING");
 });
 
-server.listen(process.env.PORT || 10000, () => {
-  polling();
-});
+server.listen(process.env.PORT || 10000, () => polling());
