@@ -1,43 +1,67 @@
-const http = require('http');
+const express = require('express');
+const path = require('path');
 const { Telegraf } = require('telegraf');
 require('dotenv').config();
 
 const token = process.env.TELEGRAM_BOT_TOKEN || process.env.BOT_TOKEN;
 const PORT = process.env.PORT || 10000;
+const app = express();
 
-// سيرفر واحد بس عشان Render
-const server = http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
-  res.end('Nader Store is Running ✅');
-});
+app.use(express.static(path.join(__dirname, 'public')));
+app.get('/', (req,res)=> res.send('Running'));
 
-server.listen(PORT, () => {
-  console.log('Server Running on ' + PORT);
-});
+app.listen(PORT, ()=> console.log('Server '+PORT));
 
-if (!token) {
-  console.log('❌ TELEGRAM_BOT_TOKEN is missing in Render Environment');
-} else {
-  const bot = new Telegraf(token);
+const bot = new Telegraf(token);
 
-  bot.start((ctx) => {
-    ctx.reply('أهلا بيك في Nader Store 🏰\nاختار من القايمة:', {
-      reply_markup: {
-        keyboard: [
-          [{ text: '🏪 المتجر' }, { text: '💰 المحفظة' }],
-          [{ text: '👤 حسابي' }, { text: '🎧 الدعم' }]
-        ],
-        resize_keyboard: true
-      }
-    });
+// 1- البداية - 4 ازرار
+bot.start((ctx)=>{
+  ctx.reply('مرحبا بك في متجر Nader Store\nاختر الخدمة من الأزرار:', {
+    reply_markup: {
+      keyboard: [
+        [{ text: '🏪 المتجر' }, { text: '💰 المحفظة' }],
+        [{ text: '👤 حسابي' }, { text: '🎧 الدعم' }]
+      ],
+      resize_keyboard: true
+    }
   });
+});
 
-  bot.hears('🏪 المتجر', (ctx) => ctx.reply('المتجر قريبا... 🏪'));
-  bot.hears('💰 المحفظة', (ctx) => ctx.reply('محفظتك: 0 جنيه 💰'));
-  bot.hears('👤 حسابي', (ctx) => ctx.reply('حسابك... 👤'));
-  bot.hears('🎧 الدعم', (ctx) => ctx.reply('الدعم الفني 🎧'));
+// 2- لما يدوس المتجر - يظهر زرارين بس
+bot.hears('🏪 المتجر', (ctx)=>{
+  ctx.reply('اختر:', {
+    reply_markup: {
+      keyboard: [
+        [{ text: '➕ إضافة إعلان قلعة' }],
+        [{ text: '🏰 مشاهدة القلعة' }],
+        [{ text: '⬅️ رجوع' }]
+      ],
+      resize_keyboard: true
+    }
+  });
+});
 
-  bot.launch().then(() => console.log('✅ Bot Started'));
+bot.hears('⬅️ رجوع', (ctx)=> ctx.scene?.leave() || bot.start(ctx));
 
-  console.log('✅ Bot trying to start...');
-}
+// 3- إضافة إعلان - يفتح الفورم
+bot.hears('➕ إضافة إعلان قلعة', (ctx)=>{
+  ctx.reply('افتح نموذج الإعلان، اكتب البيانات واختر الأبطال ثم اضغط حفظ وإرسال الإعلان', {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: 'فتح نموذج إعلان القلعة', web_app: { url: https://${process.env.RENDER_EXTERNAL_HOSTNAME} } }]
+      ]
+    }
+  });
+});
+
+bot.hears('🏰 مشاهدة القلعة', (ctx)=> ctx.reply('قائمة القلاع قريبا...'));
+bot.hears('💰 المحفظة', (ctx)=> ctx.reply('محفظتك: 0'));
+bot.hears('👤 حسابي', (ctx)=> ctx.reply('حسابك: 👤'));
+bot.hears('🎧 الدعم', (ctx)=> ctx.reply('الدعم: @YourUsername'));
+
+bot.on('web_app_data', (ctx)=>{
+  const data = JSON.parse(ctx.webAppData.data);
+  ctx.reply(✅ تم استلام إعلانك: ${JSON.stringify(data)});
+});
+
+bot.launch();
