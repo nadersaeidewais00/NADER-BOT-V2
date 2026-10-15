@@ -37,7 +37,7 @@ async function handleUpdate(u) {
 
     if (text === "/start") {
       const welcome = "🏰 مرحبا بك في NADER STORE 🏰\n\n"
-        + "أفضل متجر لبيع وشراء قلاع Rise of Kingdoms\n\n"
+        + "أفضل متجر لبيع وشراء قلاع الفاتحون العصر الذهبي\n\n"
         + "✅ بيع آمن ومضمون\n"
         + "✅ وسيط مضمون\n"
         + "✅ أسعار منافسة\n\n"
