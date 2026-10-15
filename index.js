@@ -4,8 +4,8 @@ const path = require('path');
 
 const TOKEN = process.env.BOT_TOKEN;
 const ADMIN_ID = process.env.ADMIN_ID;
-const API = https://api.telegram.org/bot${TOKEN};
-const STORE_URL = https://${process.env.RENDER_EXTERNAL_HOSTNAME}/form.html;
+const API = "https://api.telegram.org/bot" + TOKEN;
+const STORE_URL = "https://" + process.env.RENDER_EXTERNAL_HOSTNAME + "/form.html";
 
 let offset = 0;
 
@@ -14,7 +14,7 @@ function isAdmin(id) {
 }
 
 async function call(method, body) {
-  const res = await fetch(${API}/${method}, {
+  const res = await fetch(API + "/" + method, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
@@ -47,80 +47,46 @@ async function handleUpdate(u) {
     const chatId = u.message.chat.id;
     const fromId = u.message.from.id;
     const text = (u.message.text || "").trim();
-
     if (text === "/start") {
       await call('sendMessage', {
         chat_id: chatId,
-        text: مرحبا في NADER STORE\nاختار من القائمة:,
+        text: "مرحبا في NADER STORE",
         reply_markup: {
           remove_keyboard: true,
           inline_keyboard: mainMenu(isAdmin(fromId)).inline_keyboard
         }
       });
     }
-
     if (u.message.web_app_data) {
       await call('sendMessage', {
         chat_id: chatId,
-        text: تم استلام طلبك: ${u.message.web_app_data.data}
+        text: "تم استلام طلبك: " + u.message.web_app_data.data
       });
     }
   }
-
   if (u.callback_query) {
     const q = u.callback_query;
     const chatId = q.message.chat.id;
     const fromId = q.from.id;
     const data = q.data;
-
     if (data === "home") {
-      await call('sendMessage', {
-        chat_id: chatId,
-        text: "القائمة الرئيسية:",
-        reply_markup: mainMenu(isAdmin(fromId))
-      });
+      await call('sendMessage', { chat_id: chatId, text: "القائمة الرئيسية:", reply_markup: mainMenu(isAdmin(fromId)) });
     }
-
     if (data === "store") {
-      await call('sendMessage', {
-        chat_id: chatId,
-        text: "افتح المتجر:",
-        reply_markup: storeKeyboard()
-      });
+      await call('sendMessage', { chat_id: chatId, text: "افتح المتجر:", reply_markup: storeKeyboard() });
     }
-
     if (data === "account") {
-      await call('sendMessage', {
-        chat_id: chatId,
-        text: حسابك: ${fromId},
-        reply_markup: mainMenu(isAdmin(fromId))
-      });
+      await call('sendMessage', { chat_id: chatId, text: "حسابك: " + fromId, reply_markup: mainMenu(isAdmin(fromId)) });
     }
-
     if (data === "support") {
-      await call('sendMessage', {
-        chat_id: chatId,
-        text: "للدعم: @NADER",
-        reply_markup: mainMenu(isAdmin(fromId))
-      });
+      await call('sendMessage', { chat_id: chatId, text: "للدعم: @NADER", reply_markup: mainMenu(isAdmin(fromId)) });
     }
-
     if (data === "wallet") {
-      await call('sendMessage', {
-        chat_id: chatId,
-        text: "محفظتك: 0 جنيه",
-        reply_markup: mainMenu(isAdmin(fromId))
-      });
+      await call('sendMessage', { chat_id: chatId, text: "محفظتك: 0 جنيه", reply_markup: mainMenu(isAdmin(fromId)) });
     }
-
     if (data === "admin" && isAdmin(fromId)) {
-      await call('sendMessage', {
-        chat_id: chatId,
-        text: "لوحة الادمن",
-        reply_markup: mainMenu(true)
-      });
+      await call('sendMessage', { chat_id: chatId, text: "لوحة الادمن", reply_markup: mainMenu(true) });
     }
-
     await call('answerCallbackQuery', { callback_query_id: q.id });
   }
 }
