@@ -1,4 +1,4 @@
-const http = require('http');
+Kingdoms http = require('http');
 const fs = require('fs');
 const path = require('path');
 
@@ -37,7 +37,7 @@ async function handle(u){
       // رسالة محترمة واحدة بتمسح الكيبورد القديم وتظهر الترحيب
       await call('sendMessage',{
         chat_id:chatId,
-        text:'🏰 مرحبا بك في NADER STORE 🏰\n\nأفضل متجر لبيع وشراء قلاع Rise of Kingdoms\n\n✅ بيع آمن ومضمون\n✅ وسيط مضمون\n✅ أسعار منافسة\n\nاختر من القائمة بالأسفل 👇',
+        text:'🏰 مرحبا بك في NADER STORE 🏰\n\nأفضل متجر لبيع وشراء قل Conquerors Golden Age /n✅ بيع آمن ومضمون\n✅ وسيط مضمون\n✅ أسعار منافسة\n\nاختر من القائمة بالأسفل 👇',
         reply_markup:{remove_keyboard:true}
       });
       await new Promise(r=>setTimeout(r,400));
