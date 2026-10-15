@@ -2,14 +2,16 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const BOT_TOKEN = process.env.BOT_TOKEN;
+const TOKEN = process.env.BOT_TOKEN;
 const ADMIN_ID = process.env.ADMIN_ID;
-const API = https://api.telegram.org/bot${BOT_TOKEN};
+const API = https://api.telegram.org/bot${TOKEN};
 const STORE_URL = https://${process.env.RENDER_EXTERNAL_HOSTNAME}/form.html;
 
 let offset = 0;
 
-function isAdmin(id) { return String(id) == String(ADMIN_ID); }
+function isAdmin(id) {
+  return String(id) === String(ADMIN_ID);
+}
 
 async function call(method, body) {
   const res = await fetch(${API}/${method}, {
@@ -17,17 +19,18 @@ async function call(method, body) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
-  return res.json();
+  const j = await res.json();
+  return j;
 }
 
-function mainMenu(isAdminUser = false) {
+function mainMenu(isAdminUser) {
   const kb = [
     [{ text: "المتجر", callback_data: "store" }, { text: "حسابي", callback_data: "account" }],
-    [{ text: "الدعم", callback_data: "support" }, { text: "المحفظة", callback_data: "wallet" }],
-    [{ text: "لوحة الادمن", callback_data: "admin" }]
+    [{ text: "الدعم", callback_data: "support" }, { text: "المحفظة", callback_data: "wallet" }]
   ];
-  // لو مش ادمن شيل زرار الادمن
-  if (!isAdminUser) kb.pop();
+  if (isAdminUser) {
+    kb.push([{ text: "لوحة الادمن", callback_data: "admin" }]);
+  }
   return { inline_keyboard: kb };
 }
 
@@ -41,93 +44,126 @@ function storeKeyboard() {
 }
 
 async function handleUpdate(u) {
-  if (u.message) {
-    const chatId = u.message.chat.id;
-    const fromId = u.message.from.id;
-    const text = (u.message.text || "").trim();
+  try {
+    if (u.message) {
+      const chatId = u.message.chat.id;
+      const fromId = u.message.from.id;
+      const text = (u.message.text || "").trim();
 
-    if (text == "/start") {
-      await call('sendMessage', {
-        chat_id: chatId,
-        text: مرحبا ${u.message.from.first_name} في NADER STORE\nاختر من القائمة:,
-        reply_markup: {
-          remove_keyboard: true,
-          inline_keyboard: mainMenu(isAdmin(fromId)).inline_keyboard
+      if (text === "/start") {
+        await call('sendMessage', {
+          chat_id: chatId,
+          text: مرحبا ${u.message.from.first_name || ''} في NADER STORE\nاختار من القائمة تحت:,
+          reply_markup: {
+            remove_keyboard: true,
+            inline_keyboard: mainMenu(isAdmin(fromId)).inline_keyboard
+          }
+        });
+      }
+
+      if (u.message.web_app_data) {
+        const data = u.message.web_app_data.data;
+        await call('sendMessage', {
+          chat_id: chatId,
+          text: تم استلام طلبك: ${data}
+        });
+      }
+    }
+
+    if (u.callback_query) {
+      const q = u.callback_query;
+      const chatId = q.message.chat.id;
+      const fromId = q.from.id;
+      const data = q.data;
+
+      if (data === "home" || data === "start") {
+        await call('sendMessage', {
+          chat_id: chatId,
+          text: "القائمة الرئيسية:",
+          reply_markup: mainMenu(isAdmin(fromId))
+        });
+      }
+
+      if (data === "store") {
+        await call('sendMessage', {
+          chat_id: chatId,
+          text: "اضغط لفتح المتجر:",
+          reply_markup: storeKeyboard()
+        });
+      }
+
+      if (data === "account") {
+        await call('sendMessage', {
+          chat_id: chatId,
+          text: حسابك\nالايدي: ${fromId},
+          reply_markup: mainMenu(isAdmin(fromId))
+        });
+      }
+
+      if (data === "support") {
+        await call('sendMessage', {
+          chat_id: chatId,
+          text: "الدعم: @NADER_STORE",
+          reply_markup: mainMenu(isAdmin(fromId))
+        });
+      }
+
+      if (data === "wallet") {
+        await call('sendMessage', {
+          chat_id: chatId,
+          text: "محفظتك: 0 جنيه",
+          reply_markup: mainMenu(isAdmin(fromId))
+        });
+      }
+
+      if (data === "admin") {
+        if (isAdmin(fromId)) {
+          await call('sendMessage', {
+            chat_id: chatId,
+            text: "لوحة تحكم الادمن",
+            reply_markup: mainMenu(true)
+          });
         }
-      });
-    }
-  }
+      }
 
-  if (u.callback_query) {
-    const q = u.callback_query;
-    const chatId = q.message.chat.id;
-    const data = q.data;
-    const fromId = q.from.id;
-
-    if (data == "store") {
-      await call('sendMessage', {
-        chat_id: chatId,
-        text: "افتح المتجر من هنا:",
-        reply_markup: storeKeyboard()
-      });
+      await call('answerCallbackQuery', { callback_query_id: q.id });
     }
-    if (data == "home") {
-      await call('sendMessage', {
-        chat_id: chatId,
-        text: "القائمة الرئيسية:",
-        reply_markup: mainMenu(isAdmin(fromId))
-      });
-    }
-    if (data == "account") {
-      await call('sendMessage', { chat_id: chatId, text: "حسابك: " + fromId, reply_markup: mainMenu(isAdmin(fromId)) });
-    }
-    if (data == "support") {
-      await call('sendMessage', { chat_id: chatId, text: "الدعم: @nader", reply_markup: mainMenu(isAdmin(fromId)) });
-    }
-    if (data == "wallet") {
-      await call('sendMessage', { chat_id: chatId, text: "محفظتك: 0 جنيه", reply_markup: mainMenu(isAdmin(fromId)) });
-    }
-    if (data == "admin" && isAdmin(fromId)) {
-      await call('sendMessage', { chat_id: chatId, text: "لوحة الادمن", reply_markup: mainMenu(true) });
-    }
-
-    await call('answerCallbackQuery', { callback_query_id: q.id });
-  }
-
-  // WebApp data
-  if (u.message && u.message.web_app_data) {
-    const chatId = u.message.chat.id;
-    await call('sendMessage', { chat_id: chatId, text: "تم استلام طلبك: " + u.message.web_app_data.data });
+  } catch (e) {
+    console.log("handle error:", e.message);
   }
 }
 
 async function polling() {
-  console.log("BOT STARTED");
+  console.log("BOT STARTED POLLING");
   while (true) {
     try {
-      const res = await call('getUpdates', { offset, timeout: 30 });
-      if (res.result) {
-        for (const up of res.result) {
+      const r = await call('getUpdates', { offset: offset, timeout: 25 });
+      if (r.result && r.result.length > 0) {
+        for (const up of r.result) {
           await handleUpdate(up);
           offset = up.update_id + 1;
         }
       }
     } catch (e) {
-      console.log(e.message);
-      await new Promise(r => setTimeout(r, 2000));
+      console.log("polling error", e.message);
+      await new Promise(res => setTimeout(res, 3000));
     }
   }
-}
-
-// سيرفر لـ Render
+        }
 const server = http.createServer((req, res) => {
   if (req.url.includes("form.html")) {
-    const p = path.join(__dirname, "form.html");
-    if (fs.existsSync(p)) {
-      res.writeHead(200, { 'Content-Type': 'text/html' });
-      return res.end(fs.readFileSync(p));
-    }
+    try {
+      const p = path.join(__dirname, "form.html");
+      if (fs.existsSync(p)) {
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        return res.end(fs.readFileSync(p, 'utf8'));
+      }
+    } catch (e) {}
   }
-  res.writeHead(200); res.end("Bot Running");
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end("NADER BOT RUNNING");
 });
-server.listen(process.env.PORT || 10000, () => polling());
+
+server.listen(process.env.PORT || 10000, () => {
+  polling();
+});
