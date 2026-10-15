@@ -9,9 +9,7 @@ const STORE_URL = "https://" + process.env.RENDER_EXTERNAL_HOSTNAME + "/form.htm
 
 let offset = 0;
 
-function isAdmin(id) {
-  return String(id) === String(ADMIN_ID);
-}
+function isAdmin(id) { return String(id) === String(ADMIN_ID); }
 
 async function call(method, body) {
   const res = await fetch(API + "/" + method, {
@@ -24,22 +22,11 @@ async function call(method, body) {
 
 function mainMenu(isAdminUser) {
   const kb = [
-    [{ text: "المتجر", callback_data: "store" }, { text: "حسابي", callback_data: "account" }],
-    [{ text: "الدعم", callback_data: "support" }, { text: "المحفظة", callback_data: "wallet" }]
+    [{ text: "🏰 المتجر", callback_data: "store" }, { text: "👤 حسابي", callback_data: "account" }],
+    [{ text: "💬 الدعم", callback_data: "support" }, { text: "💰 المحفظة", callback_data: "wallet" }]
   ];
-  if (isAdminUser) {
-    kb.push([{ text: "لوحة الادمن", callback_data: "admin" }]);
-  }
+  if (isAdminUser) kb.push([{ text: "⚙️ لوحة الادمن", callback_data: "admin" }]);
   return { inline_keyboard: kb };
-}
-
-function storeKeyboard() {
-  return {
-    inline_keyboard: [
-      [{ text: "افتح المتجر", web_app: { url: STORE_URL } }],
-      [{ text: "رجوع", callback_data: "home" }]
-    ]
-  };
 }
 
 async function handleUpdate(u) {
@@ -47,52 +34,88 @@ async function handleUpdate(u) {
     const chatId = u.message.chat.id;
     const fromId = u.message.from.id;
     const text = (u.message.text || "").trim();
+
     if (text === "/start") {
+      const welcome = "🏰 مرحبا بك في NADER STORE 🏰\n\n"
+        + "أفضل متجر لبيع وشراء قلاع Rise of Kingdoms\n\n"
+        + "✅ بيع آمن ومضمون\n"
+        + "✅ وسيط مضمون\n"
+        + "✅ أسعار منافسة\n\n"
+        + "اختر من القائمة بالأسفل للبدء 👇";
+
       await call('sendMessage', {
         chat_id: chatId,
-        text: "مرحبا في NADER STORE",
+        text: welcome,
         reply_markup: {
           remove_keyboard: true,
           inline_keyboard: mainMenu(isAdmin(fromId)).inline_keyboard
         }
       });
     }
+
     if (u.message.web_app_data) {
       await call('sendMessage', {
         chat_id: chatId,
-        text: "تم استلام طلبك: " + u.message.web_app_data.data
+        text: "✅ تم استلام اعلانك بنجاح!\nسيتم مراجعته ونشره قريبا.\nالبيانات: " + u.message.web_app_data.data
       });
     }
   }
+
   if (u.callback_query) {
     const q = u.callback_query;
     const chatId = q.message.chat.id;
     const fromId = q.from.id;
     const data = q.data;
+
     if (data === "home") {
       await call('sendMessage', { chat_id: chatId, text: "القائمة الرئيسية:", reply_markup: mainMenu(isAdmin(fromId)) });
     }
+
     if (data === "store") {
-      await call('sendMessage', { chat_id: chatId, text: "افتح المتجر:", reply_markup: storeKeyboard() });
+      await call('sendMessage', {
+        chat_id: chatId,
+        text: "🏰 اضغط بالأسفل لفتح المتجر:",
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: "🚀 افتح المتجر الآن", web_app: { url: STORE_URL } }],
+            [{ text: "🔙 رجوع", callback_data: "home" }]
+          ]
+        }
+      });
     }
+
     if (data === "account") {
-      await call('sendMessage', { chat_id: chatId, text: "حسابك: " + fromId, reply_markup: mainMenu(isAdmin(fromId)) });
+      const txt = "👤 حسابك\n\n"
+        + "🆔 الايدي: " + fromId + "\n"
+        + "📦 اعلاناتك: 0\n"
+        + "⭐ تقييمك: 5.0";
+      await call('sendMessage', { chat_id: chatId, text: txt, reply_markup: mainMenu(isAdmin(fromId)) });
     }
+
     if (data === "support") {
-      await call('sendMessage', { chat_id: chatId, text: "للدعم: @NADER", reply_markup: mainMenu(isAdmin(fromId)) });
+      const txt = "💬 الدعم الفني\n\n"
+        + "لو عندك اي مشكلة تواصل معنا:\n"
+        + "@nadersaeidewais00\n\n"
+        + "الرد خلال دقائق";
+      await call('sendMessage', { chat_id: chatId, text: txt, reply_markup: mainMenu(isAdmin(fromId)) });
     }
+
     if (data === "wallet") {
-      await call('sendMessage', { chat_id: chatId, text: "محفظتك: 0 جنيه", reply_markup: mainMenu(isAdmin(fromId)) });
+      const txt = "💰 محفظتك\n\n"
+        + "الرصيد الحالي: 0 جنيه\n"
+        + "يمكنك شحن الرصيد عن طريق الدعم";
+      await call('sendMessage', { chat_id: chatId, text: txt, reply_markup: mainMenu(isAdmin(fromId)) });
     }
+
     if (data === "admin" && isAdmin(fromId)) {
-      await call('sendMessage', { chat_id: chatId, text: "لوحة الادمن", reply_markup: mainMenu(true) });
+      await call('sendMessage', { chat_id: chatId, text: "⚙️ لوحة الادمن جاهزة", reply_markup: mainMenu(true) });
     }
+
     await call('answerCallbackQuery', { callback_query_id: q.id });
   }
 }
 
 async function polling() {
-  console.log("BOT STARTED");
   while (true) {
     try {
       const r = await call('getUpdates', { offset: offset, timeout: 25 });
@@ -103,12 +126,10 @@ async function polling() {
         }
       }
     } catch (e) {
-      console.log(e.message);
       await new Promise(x => setTimeout(x, 2000));
     }
   }
-}
-
+              }
 const server = http.createServer((req, res) => {
   if (req.url.includes("form.html")) {
     const p = path.join(__dirname, "form.html");
@@ -117,8 +138,7 @@ const server = http.createServer((req, res) => {
       return res.end(fs.readFileSync(p));
     }
   }
-  res.writeHead(200);
-  res.end("RUNNING");
+  res.writeHead(200); res.end("RUNNING");
 });
 
 server.listen(process.env.PORT || 10000, () => polling());
